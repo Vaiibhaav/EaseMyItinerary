@@ -22,7 +22,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { setDoc, doc } from "firebase/firestore";
-import { db } from "@/service/fireBaseConfig";
+import { db } from "@/service/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
 const apiKey = import.meta.env.VITE_GOOGLE_PLACE_API_KEY;
