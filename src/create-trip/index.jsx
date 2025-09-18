@@ -303,17 +303,26 @@ function CreateTrip() {
 
 				{/* We removed inline itinerary rendering — the app now navigates to /view-trip/:id */}
 				<Dialog open={openDialog}>
-					<DialogContent>
-						<DialogHeader>
+					<DialogContent className="max-w-md rounded-2xl shadow-2xl p-8 bg-white">
+						<DialogHeader className="flex flex-col items-center text-center">
 							<DialogDescription>
-								<img src="/logo.svg" alt="logo" />
-								<h2 className="font-bold text-lg mt-7">Sign in</h2>
-								<p>Sign in with Google authentication securely</p>
+								<img
+									src="/logo.svg"
+									alt="logo"
+									className="w-20 h-20 mx-auto mb-4"
+								/>
+								<h2 className="font-bold text-2xl text-gray-800 mt-4">
+									Sign in
+								</h2>
+								<p className="text-gray-500 text-sm mt-2">
+									Sign in with Google authentication securely
+								</p>
+
 								<Button
 									onClick={login}
-									className="w-full mt-5 flex gap-4 items-center justify-center"
+									className="w-full mt-6 flex gap-3 items-center justify-center px-6 py-3 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 shadow-md"
 								>
-									<FcGoogle className="h-7 w-7" />
+									<FcGoogle className="h-6 w-6" />
 									Sign in with Google
 								</Button>
 							</DialogDescription>
