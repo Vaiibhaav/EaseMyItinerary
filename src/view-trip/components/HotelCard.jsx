@@ -18,7 +18,6 @@ function HotelCard({ day, index }) {
 	const getPlaceImage = async () => {
 		try {
 			const res = await GetPlaceDetails(data);
-			// ✅ FIX: use res.data instead of res
 			if (res?.data?.places?.[0]?.photos?.length) {
 				const photoRef = res.data.places[0].photos[0].name;
 				const url = PHOTO_REF_URL.replace("{NAME}", photoRef);
@@ -33,13 +32,15 @@ function HotelCard({ day, index }) {
 		<Link
 			to={`https://www.google.com/maps/search/?api=1&query=${day?.accommodation?.name}, ${day?.accommodation?.location}`}
 			target="_blank"
+			rel="noopener noreferrer"
 		>
 			<div
 				key={index}
-				className="p-4 border rounded-lg shadow hover:scale-105 transition-all cursor-pointer"
+				className="p-4 border border-border rounded-xl bg-card shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer"
 			>
-				<h3 className="font-semibold mb-2">
-					Day {index + 1} - {day?.day_of_week}
+				{/* Day Heading */}
+				<h3 className="font-semibold text-lg text-foreground mb-3">
+					Day {index + 1} — {day?.day_of_week}
 				</h3>
 
 				{/* Hotel Image */}
@@ -47,18 +48,22 @@ function HotelCard({ day, index }) {
 					<img
 						src={photoUrl || "/placeholder.jpg"}
 						alt={day?.accommodation?.name}
-						className="w-full h-40 object-cover rounded-xl"
+						className="w-full h-40 object-cover rounded-lg"
 					/>
 				</div>
 
 				{/* Hotel Details */}
-				<p className="text-gray-700 font-medium">{day?.accommodation?.name}</p>
-				<p className="text-gray-600 text-sm">
+				<p className="text-foreground font-medium text-base">
+					{day?.accommodation?.name}
+				</p>
+				<p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
 					📍 {day?.accommodation?.location}
 				</p>
-				<p className="text-sm text-gray-500 mt-2">
-					{day?.accommodation?.notes}
-				</p>
+				{day?.accommodation?.notes && (
+					<p className="text-sm text-foreground/70 mt-2 line-clamp-2">
+						{day.accommodation.notes}
+					</p>
+				)}
 			</div>
 		</Link>
 	);

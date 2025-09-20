@@ -1,54 +1,64 @@
 import React, { useEffect, useState } from "react";
-import { IoIosShare } from "react-icons/io";
+import { Calendar, Users, Wallet } from "lucide-react"; // ✅ Lucide icons
 import { GetPlaceDetails, PHOTO_REF_URL } from "../../service/GlobalApi";
 
 function InfoSection({ trip }) {
+	const [photoUrl, setPhotoUrl] = useState();
 
+	useEffect(() => {
+		trip && getPlaceImage();
+	}, [trip]);
 
-    const [photoUrl, setPhotoUrl] = useState(); 
-    useEffect(() => {
-        trip&&getPlaceImage();
-    }, [trip]);
-    const data = {
-			textQuery: trip?.userSelection?.destination?.label
+	const data = {
+		textQuery: trip?.userSelection?.destination?.label,
 	};
-    const getPlaceImage = async() => {
-        const result = await GetPlaceDetails(data).then(res=>{
-            console.log("Place Details:", res.data.places[0].photos[3].name);
-            const photoUrl = PHOTO_REF_URL.replace("{NAME}", res.data.places[0].photos[3].name);
-            setPhotoUrl(photoUrl);
-        })
-    }
+
+	const getPlaceImage = async () => {
+		try {
+			const res = await GetPlaceDetails(data);
+			if (res?.data?.places?.[0]?.photos?.[3]) {
+				const photoUrl = PHOTO_REF_URL.replace(
+					"{NAME}",
+					res.data.places[0].photos[3].name
+				);
+				setPhotoUrl(photoUrl);
+			}
+		} catch (err) {
+			console.error("Error fetching cover image:", err);
+		}
+	};
 
 	return (
 		<div>
+			{/* Cover Image */}
 			<img
-				src={photoUrl}
-				className="h-[340px] w-full object-cover rounded"
+				src={photoUrl || "/placeholder.jpg"}
+				className="h-[340px] w-full object-cover rounded-xl"
 				alt="Trip cover"
 			/>
 
-			<div className="flex justify-between items-start mt-5 mb-5">
-				{/* Left: Trip Details */}
-				<div className="flex flex-col gap-3">
-					<h2 className="font-bold text-2xl">
+			{/* Trip details */}
+			<div className="flex justify-between items-start mt-6 mb-5">
+				<div className="flex flex-col gap-4">
+					<h2 className="font-bold text-3xl text-foreground">
 						{trip?.userSelection?.destination?.label}
 					</h2>
 
 					<div className="flex flex-wrap gap-3">
-						<span className="p-2 px-4 bg-gray-200 rounded-full text-gray-700 text-sm">
-							🗓️{" "}
+						<span className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-full text-sm text-foreground font-medium">
+							<Calendar className="w-4 h-4 text-primary" />
 							{trip?.userSelection?.days > 1
 								? `${trip?.userSelection?.days} Days Trip`
 								: `${trip?.userSelection?.days} Day Trip`}
 						</span>
 
-						<span className="p-2 px-4 bg-gray-200 rounded-full text-gray-700 text-sm">
-							💲 Maximum Budget: {trip?.userSelection?.budget} INR
+						<span className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-full text-sm text-foreground font-medium">
+							<Wallet className="w-4 h-4 text-primary" />
+							Budget: {trip?.userSelection?.budget} INR
 						</span>
 
-						<span className="p-2 px-4 bg-gray-200 rounded-full text-gray-700 text-sm">
-							🧳 No. of Travelers:{" "}
+						<span className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-full text-sm text-foreground font-medium">
+							<Users className="w-4 h-4 text-primary" />
 							{trip?.userSelection?.people > 1
 								? `${trip?.userSelection?.people} People`
 								: `${trip?.userSelection?.people} Person`}

@@ -11,7 +11,9 @@ function Stars({ count }) {
 				<span
 					key={i}
 					className={
-						i < count ? "text-yellow-400 text-lg" : "text-gray-300 text-lg"
+						i < count
+							? "text-yellow-400 text-lg"
+							: "text-muted-foreground/40 text-lg"
 					}
 				>
 					★
@@ -28,7 +30,7 @@ function Landing() {
 	const demoReviews = [
 		{
 			name: "Amit Sharma",
-			image: "/demo-users/amit.jpg", // place images in public/demo-users/
+			image: "/demo-users/amit.jpg",
 			review:
 				"EaseMyItinerary planned my Goa trip perfectly! Smooth bookings and the best nightlife spots.",
 			rating: 5,
@@ -63,33 +65,45 @@ function Landing() {
 	];
 
 	return (
-		<div className="flex flex-col items-center mx-6 md:mx-56 gap-12">
+		<div className="flex flex-col items-center mx-6 md:mx-56 gap-14">
+			<div className="absolute inset-0 -z-10">
+				<img
+					src="/travel-patternjpg.jpg"
+					alt="Background pattern"
+					className="w-full h-full object-cover opacity-20"
+				/>
+			</div>
 			{/* Hero Section */}
-			<h1 className="font-extrabold text-[36px] md:text-[50px] text-center mt-16 leading-tight">
-				<span className="text-[#f56551]">{t("AI-Powered Itineraries")} </span>
-				{t("— Tailored,Bookable, Instant.")}
+			<h1 className="font-extrabold text-4xl md:text-6xl text-center mt-20 leading-snug tracking-tight">
+				<span className="text-primary/80">{t("AI-Powered Itineraries")}</span>
+				<br />
+				<span className="text-muted-foreground font-medium">
+					{t("Tailored, Bookable, Instant.")}
+				</span>
 			</h1>
-			<p className="text-lg md:text-xl text-gray-500 text-center max-w-3xl">
+
+			<p className="text-lg md:text-xl text-muted-foreground text-center max-w-3xl">
 				{t(
-					"Generate end-to-end, optimized itineraries based on budget, time, and interests — adapt in real time and book everything with one click."
+					"Generate end-to-end, optimized itineraries based on budget, time, and interests. Adapt in real time and book everything with one click."
 				)}
 			</p>
+
 			<Link to={"/create-trip"}>
-				<Button className="px-6 py-3 text-lg rounded-full">
+				<Button className="px-7 py-3 text-lg rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition">
 					{t("Get Started")}
 				</Button>
 			</Link>
 
 			{/* Experiences Section */}
 			<section className="w-full max-w-6xl mt-20 mb-20">
-				<h2 className="text-3xl font-bold text-center mb-12">
-					Traveller Experiences ✨
+				<h2 className="text-3xl font-bold text-center mt-10 mb-14 text-primary">
+					Traveller Experiences
 				</h2>
 				<div className="grid md:grid-cols-3 gap-10">
 					{demoReviews.map((r, idx) => (
 						<div
 							key={idx}
-							className="bg-white shadow-lg rounded-2xl overflow-hidden border hover:shadow-2xl transition flex flex-col"
+							className="bg-card shadow-sm hover:shadow-lg rounded-2xl overflow-hidden border border-border transition-transform hover:-translate-y-1 flex flex-col"
 						>
 							{/* Itinerary image */}
 							<img
@@ -104,23 +118,27 @@ function Landing() {
 									<img
 										src={r.image}
 										alt={r.name}
-										className="w-12 h-12 rounded-full object-cover border"
+										className="w-12 h-12 rounded-full object-cover border-2 border-accent shadow-sm"
 									/>
 									<div>
-										<h3 className="font-semibold text-lg">{r.name}</h3>
+										<h3 className="font-semibold text-lg text-foreground">
+											{r.name}
+										</h3>
 										<Stars count={r.rating} />
 									</div>
 								</div>
 
 								{/* Review */}
-								<p className="text-gray-600 text-sm flex-1">{r.review}</p>
+								<p className="text-muted-foreground text-sm italic leading-relaxed flex-1">
+									“{r.review}”
+								</p>
 
 								{/* Highlights */}
 								<div className="mt-4">
-									<h4 className="text-xs font-bold uppercase text-gray-500 mb-1">
+									<h4 className="text-xs font-bold uppercase text-muted-foreground mb-1 tracking-wide">
 										Highlights
 									</h4>
-									<ul className="text-xs text-gray-700 list-disc list-inside space-y-1">
+									<ul className="text-xs text-foreground list-disc list-inside space-y-1">
 										{r.highlights.map((h, i) => (
 											<li key={i}>{h}</li>
 										))}
@@ -128,7 +146,7 @@ function Landing() {
 								</div>
 
 								{/* Itinerary tag */}
-								<div className="mt-4 text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full w-fit">
+								<div className="mt-4 text-xs font-medium text-primary bg-accent/40 px-3 py-1 rounded-full w-fit">
 									{r.itinerary}
 								</div>
 							</div>

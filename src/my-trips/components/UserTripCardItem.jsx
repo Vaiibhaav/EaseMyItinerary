@@ -28,13 +28,11 @@ function UserTripCardItem({ trip }) {
 	};
 
 	const handleViewDetails = () => {
-	    navigate(`/view-trip/${trip.id}`);
+		navigate(`/view-trip/${trip.id}`);
 	};
 
-
-
 	return (
-		<div className="group relative rounded-2xl border bg-white shadow-sm hover:shadow-xl transition-all overflow-hidden flex flex-col">
+		<div className="group relative rounded-2xl border border-border bg-card shadow-sm hover:shadow-lg transition-all overflow-hidden flex flex-col">
 			{/* Image */}
 			<div className="relative">
 				<img
@@ -46,30 +44,33 @@ function UserTripCardItem({ trip }) {
 			</div>
 
 			{/* Content */}
-			<div className="p-4 flex flex-col flex-grow">
-				<h3 className="font-semibold text-xl text-gray-800 line-clamp-1">
+			<div className="p-5 flex flex-col flex-grow">
+				{/* Destination Title */}
+				<h3 className="font-bold text-xl text-foreground line-clamp-1">
 					{trip?.userSelection?.destination?.label}
 				</h3>
 
-				<div className="mt-2 flex items-center text-gray-600 text-sm gap-4">
+				{/* Meta Info */}
+				<div className="mt-2 flex items-center text-sm text-muted-foreground gap-4">
 					<span className="flex items-center gap-1">
-						<Calendar className="w-4 h-4" />
+						<Calendar className="w-4 h-4 text-primary/80" />
 						{trip?.userSelection?.days} days
 					</span>
 					<span className="flex items-center gap-1">
-						<Users className="w-4 h-4" />
+						<Users className="w-4 h-4 text-primary/80" />
 						{trip?.userSelection?.people} people
 					</span>
 				</div>
 
-				<p className="mt-3 text-sm text-gray-500 line-clamp-2">
-					{trip?.tripData?.notes || " "}
+				{/* Notes */}
+				<p className="mt-3 text-sm text-foreground/70 line-clamp-2">
+					{trip?.tripData?.notes || "No additional notes provided."}
 				</p>
 
 				{/* CTA button */}
 				<button
 					onClick={handleViewDetails}
-					className="mt-4 w-full py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+					className="mt-4 w-full py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
 				>
 					View Details
 				</button>

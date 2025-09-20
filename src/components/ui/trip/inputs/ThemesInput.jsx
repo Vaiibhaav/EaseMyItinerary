@@ -19,23 +19,30 @@ function ThemesInput({ value = [], onChange }) {
 	};
 
 	return (
-		<div>
-			<h2 className="text-xl my-3 font-medium">Themes</h2>
+		<div className="flex flex-col gap-2">
+			{/* Label */}
+			<label className="text-lg font-semibold text-foreground">Themes</label>
+
+			{/* Theme selection */}
 			<div className="flex flex-wrap gap-3">
-				{themes.map((theme) => (
-					<button
-						key={theme}
-						type="button"
-						className={`px-4 py-2 rounded border ${
-							value.includes(theme)
-								? "bg-black text-white"
-								: "bg-gray-100 text-black"
-						}`}
-						onClick={() => toggleTheme(theme)}
-					>
-						{theme}
-					</button>
-				))}
+				{themes.map((theme) => {
+					const selected = value.includes(theme);
+					return (
+						<button
+							key={theme}
+							type="button"
+							onClick={() => toggleTheme(theme)}
+							className={`px-4 py-2 rounded-full text-sm font-medium transition shadow-sm
+                ${
+									selected
+										? "bg-primary text-primary-foreground hover:bg-primary/90"
+										: "bg-accent/40 text-foreground hover:bg-accent/60"
+								}`}
+						>
+							{theme}
+						</button>
+					);
+				})}
 			</div>
 		</div>
 	);

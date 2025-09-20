@@ -30,23 +30,50 @@ function MyTrips() {
 		const querySnapshot = await getDocs(q);
 		const trips = [];
 		querySnapshot.forEach((doc) => {
-			trips.push({ id: doc.id, ...doc.data() }); // include Firestore doc ID
+			trips.push({ id: doc.id, ...doc.data() });
 		});
+
+		// sort by ID (newest first)
 		setUserTrips(trips.sort((a, b) => b.id - a.id));
 	};
 
 	return (
-		<div className="flex flex-col items-center mt-10 px-5">
-			<h2 className="font-bold text-3xl mb-6">My Trips</h2>
+		<div className="flex flex-col items-center mt-12 px-6">
+			{/* Header */}
+			<div className="text-center mb-10">
+				<h2 className="font-extrabold text-4xl text-primary">My Trips</h2>
+				<p className="text-muted-foreground mt-2 max-w-xl">
+					A collection of all the trips you’ve planned with{" "}
+					<span className="font-semibold text-foreground">EaseMyItinerary</span>
+					.
+				</p>
+			</div>
 
-			{/* Grid layout for trips */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+			{/* Trips Grid */}
+			<div className="w-full max-w-6xl">
 				{userTrips.length > 0 ? (
-					userTrips.map((trip, index) => (
-						<UserTripCardItem key={index} trip={trip} />
-					))
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+						{userTrips.map((trip, index) => (
+							<UserTripCardItem key={index} trip={trip} />
+						))}
+					</div>
 				) : (
-					<p className="text-gray-500">No trips found.</p>
+					<div className="flex flex-col items-center justify-center py-20 bg-card rounded-xl shadow-md">
+						<img
+							src="/empty-state.svg"
+							alt="No trips"
+							className="w-32 h-32 mb-4 opacity-70"
+						/>
+						<p className="text-muted-foreground text-lg">
+							No trips found. Start by planning your first adventure!
+						</p>
+						<button
+							onClick={() => navigate("/create-trip")}
+							className="mt-6 px-6 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition"
+						>
+							Create a Trip
+						</button>
+					</div>
 				)}
 			</div>
 		</div>

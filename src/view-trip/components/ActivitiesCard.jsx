@@ -16,7 +16,6 @@ function ActivitiesCard({ activity }) {
 			const data = { textQuery: activity?.location };
 			const res = await GetPlaceDetails(data);
 
-			// ✅ FIX: axios returns data in res.data
 			if (res?.data?.places?.[0]?.photos?.length) {
 				const photoRef = res.data.places[0].photos[0].name;
 				const url = PHOTO_REF_URL.replace("{NAME}", photoRef);
@@ -34,7 +33,7 @@ function ActivitiesCard({ activity }) {
 			rel="noopener noreferrer"
 			className="h-full"
 		>
-			<div className="p-4 border rounded-lg shadow hover:scale-105 transition-all cursor-pointer flex flex-col h-full">
+			<div className="p-4 border border-border rounded-xl bg-card shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer flex flex-col h-full">
 				{/* Image */}
 				<img
 					src={photoUrl || "/placeholder.jpg"}
@@ -43,18 +42,18 @@ function ActivitiesCard({ activity }) {
 				/>
 
 				{/* Description */}
-				<h4 className="font-semibold text-gray-800 text-sm mt-2">
+				<h4 className="font-semibold text-foreground text-sm mt-3 line-clamp-2">
 					{activity?.description}
 				</h4>
 
 				{/* Location */}
-				<p className="text-gray-500 text-xs flex items-center gap-1">
-					<FaMapMarkerAlt className="text-pink-500 text-xs" />
+				<p className="text-muted-foreground text-xs flex items-center gap-1 mt-1">
+					<FaMapMarkerAlt className="text-primary text-xs" />
 					{activity?.location}
 				</p>
 
-				{/* Time pinned bottom-left */}
-				<p className="text-orange-600 font-bold text-sm mt-auto">
+				{/* Time pinned at bottom */}
+				<p className="text-primary font-medium text-sm mt-auto">
 					{activity?.time}
 				</p>
 			</div>

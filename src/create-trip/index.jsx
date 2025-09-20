@@ -101,12 +101,10 @@ function CreateTrip() {
 
 	const onGenerateTrips = async () => {
 		const user = localStorage.getItem("user");
-
 		if (!user) {
 			setOpenDialog(true);
 			return;
 		}
-
 		if (!validateForm()) {
 			console.log("Validation failed:", errors);
 			return;
@@ -114,25 +112,13 @@ function CreateTrip() {
 
 		setLoading(true);
 		try {
-			console.log("Form Data being sent:", formData);
 			const result = await getItinerary(formData);
-			console.log("Generated Itinerary (raw):", result);
+			if (!result) throw new Error("No itinerary returned from AI");
 
-			if (!result) {
-				throw new Error(
-					"No itinerary returned from AI. Check console for AI raw response."
-				);
-			}
-
-			// Save and navigate (saveAiTrip normalizes TripData)
 			await saveAiTrip(result);
-			// note: saveAiTrip navigates on success
 		} catch (err) {
 			console.error("Error generating itinerary:", err);
-			// user-friendly message
-			alert(
-				"Failed to generate itinerary. See console for details. If this is a server overload, try again in a few minutes."
-			);
+			alert("Failed to generate itinerary. Try again in a few minutes.");
 		} finally {
 			setLoading(false);
 		}
@@ -144,22 +130,14 @@ function CreateTrip() {
 			const rawUser = localStorage.getItem("user");
 			const user = rawUser ? JSON.parse(rawUser) : null;
 
-			// Normalize TripData:
-			// - if it's already an object -> use directly
-			// - if it's a string -> try parse, otherwise save as { raw: <string> }
 			let tripObj = TripData;
 			if (typeof TripData === "string") {
 				try {
 					tripObj = JSON.parse(TripData);
-				} catch (err) {
-					console.warn(
-						"TripData is a string but not valid JSON. Saving raw string under tripData.raw",
-						err
-					);
+				} catch {
 					tripObj = { raw: TripData };
 				}
 			}
-
 			if (tripObj === null || typeof tripObj !== "object") {
 				tripObj = { raw: String(tripObj) };
 			}
@@ -172,11 +150,10 @@ function CreateTrip() {
 				createdAt: new Date().toISOString(),
 			});
 
-			// Navigate after successful save
 			navigate(`/view-trip/${docId}`);
 		} catch (err) {
 			console.error("Error saving AI trip:", err);
-			alert("Failed to save itinerary. Check console for details.");
+			alert("Failed to save itinerary.");
 			throw err;
 		}
 	};
@@ -193,14 +170,13 @@ function CreateTrip() {
 				}
 			)
 			.then((res) => {
-				console.log("Full response:", res);
 				localStorage.setItem("user", JSON.stringify(res.data));
 				setOpenDialog(false);
 				onGenerateTrips();
 			})
 			.catch((err) => {
 				console.error("Error fetching user profile:", err);
-				alert("Failed to fetch Google profile. Check console.");
+				alert("Failed to fetch Google profile.");
 			});
 	};
 
@@ -210,13 +186,17 @@ function CreateTrip() {
 
 	return (
 		<div className="flex justify-center mt-10 px-5">
-			<div className="w-full max-w-2xl">
-				<h2 className="font-bold text-3xl text-center">Customize Your Trip</h2>
-				<p className="text-gray-600 mt-2 text-center">
-					Fill in your details and let our AI create a personalized itinerary.
+			<div className="w-full max-w-2xl bg-card rounded-xl shadow-md p-8">
+				{/* Heading */}
+				<h2 className="font-bold text-3xl text-center text-foreground">
+					Customize Your Trip
+				</h2>
+				<p className="text-muted-foreground mt-2 text-center">
+					Fill in your details and let our AI create a personalized itinerary
 				</p>
 
-				<div className="mt-20 mb-20 flex flex-col gap-9">
+				{/* Form inputs */}
+				<div className="mt-10 mb-12 flex flex-col gap-8">
 					<DestinationInput
 						value={formData.destination}
 						onChange={(v) => handleInputChange("destination", v)}
@@ -295,30 +275,37 @@ function CreateTrip() {
 					)}
 				</div>
 
-				<div className="my-10 flex justify-end">
-					<Button onClick={onGenerateTrips} disabled={loading}>
-						{loading ? "Generating..." : "Generate trip for me"}
+				{/* CTA button */}
+				<div className="my-8 flex justify-center">
+					<Button
+						onClick={onGenerateTrips}
+						disabled={loading}
+						className="px-8 py-3 text-lg rounded-full"
+					>
+						{loading ? "Generating..." : "Generate My Itinerary"}
 					</Button>
 				</div>
 
-				{/* We removed inline itinerary rendering — the app now navigates to /view-trip/:id */}
+				{/* Sign-in dialog */}
 				<Dialog open={openDialog}>
-					<DialogContent>
+					<DialogContent className="bg-card shadow-lg rounded-xl">
 						<DialogHeader>
-							<DialogDescription>
+							<DialogDescription className="text-center">
 								<img
 									src="/logo.svg"
 									alt="logo"
-									className="w-20 h-20 mx-auto mb-4"
+									className="w-16 h-16 mx-auto mb-4"
 								/>
-								<h2 className="font-bold text-lg mt-7">Sign in</h2>
-								<p>Sign in with Google authentication securely</p>
+								<h2 className="font-bold text-xl mt-4">Sign in</h2>
+								<p className="text-muted-foreground mb-6">
+									Sign in with Google authentication securely
+								</p>
 								<Button
 									onClick={login}
-									className="w-full mt-5 flex gap-4 items-center justify-center"
+									className="w-full flex gap-3 items-center justify-center rounded-full"
 								>
-									<FcGoogle className="h-7 w-7" />
-									Sign in with Google
+									<FcGoogle className="h-6 w-6" />
+									Continue with Google
 								</Button>
 							</DialogDescription>
 						</DialogHeader>

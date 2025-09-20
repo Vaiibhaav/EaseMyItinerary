@@ -11,6 +11,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import ViewTrip from "./view-trip/[tripId]/index.jsx";
 import MyTrips from "./my-trips/index.jsx";
 import Footer from "./components/ui/custom/Footer.jsx";
+import Special from "./components/ui/custom/Special.jsx";
 
 const router = createBrowserRouter([
 	{
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
 		path: "/my-trips",
 		element: <MyTrips />,
 	},
+	{ path: "/special", element: <Special name="Sulochana" /> },
 ]);
 
 createRoot(document.getElementById("root")).render(

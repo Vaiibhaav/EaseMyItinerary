@@ -14,16 +14,64 @@ function DestinationInput({ value, onChange, apiKey }) {
 	}, [debouncedOnChange]);
 
 	return (
-		<div>
-			<h2 className="text-xl my-3 font-medium">Destination</h2>
-			<GooglePlacesAutocomplete
-				apiKey={apiKey}
-				selectProps={{
-					value,
-					onChange: (v) => debouncedOnChange(v),
-					placeholder: "Search your destination...",
-				}}
-			/>
+		<div className="flex flex-col gap-2">
+			{/* Label */}
+			<label className="text-lg font-semibold text-foreground">
+				Destination
+			</label>
+
+			{/* Google Autocomplete Input */}
+			<div className="rounded-lg border border-border bg-card shadow-sm focus-within:ring-2 focus-within:ring-primary transition">
+				<GooglePlacesAutocomplete
+					apiKey={apiKey}
+					selectProps={{
+						value,
+						onChange: (v) => debouncedOnChange(v),
+						placeholder: "Search your destination...",
+						styles: {
+							control: (provided) => ({
+								...provided,
+								backgroundColor: "transparent",
+								border: "none",
+								boxShadow: "none",
+								minHeight: "42px",
+								paddingLeft: "6px",
+								color: "var(--foreground)",
+							}),
+							input: (provided) => ({
+								...provided,
+								color: "var(--foreground)",
+							}),
+							singleValue: (provided) => ({
+								...provided,
+								color: "var(--foreground)",
+								fontWeight: 500,
+							}),
+							placeholder: (provided) => ({
+								...provided,
+								color: "var(--muted-foreground)", // 👈 grey placeholder
+								fontWeight: 400,
+							}),
+							option: (provided, state) => ({
+								...provided,
+								backgroundColor: state.isFocused
+									? "var(--accent)"
+									: "transparent",
+								color: "var(--foreground)",
+								cursor: "pointer",
+							}),
+							menu: (provided) => ({
+								...provided,
+								backgroundColor: "var(--card)",
+								border: "1px solid var(--border)",
+								borderRadius: "0.5rem",
+								marginTop: "4px",
+								zIndex: 20,
+							}),
+						},
+					}}
+				/>
+			</div>
 		</div>
 	);
 }

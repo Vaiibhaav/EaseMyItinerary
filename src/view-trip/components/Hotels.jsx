@@ -1,12 +1,16 @@
-import { Hotel } from "lucide-react";
 import React from "react";
-import { Link } from "react-router-dom";
 import HotelCard from "./HotelCard";
 
 function Hotels({ trip }) {
 	return (
-		<div>
-			<h2 className="font-bold text-xl mt-5 mb-3">🏨 Hotel Recommendations</h2>
+		<div className="space-y-6">
+			{/* Section Heading */}
+			<div className="flex items-center gap-2">
+				<h2 className="text-2xl font-extrabold text-primary">
+					Hotel Recommendations
+				</h2>
+				<div className="flex-grow border-t border-border"></div>
+			</div>
 
 			{/* Grid layout for hotel cards */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
