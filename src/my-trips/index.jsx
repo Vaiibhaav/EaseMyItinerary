@@ -41,7 +41,7 @@ function MyTrips() {
 		<div className="flex flex-col items-center mt-12 px-6">
 			{/* Header */}
 			<div className="text-center mb-10">
-				<h2 className="font-extrabold text-4xl text-primary">My Trips</h2>
+				<h2 className="font-extrabold text-4xl text-primary mt-20">My Trips</h2>
 				<p className="text-muted-foreground mt-2 max-w-xl">
 					A collection of all the trips you’ve planned with{" "}
 					<span className="font-semibold text-foreground">EaseMyItinerary</span>
