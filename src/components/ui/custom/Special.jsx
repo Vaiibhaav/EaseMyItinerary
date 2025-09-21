@@ -2,13 +2,37 @@ import React, { useEffect, useState } from "react";
 
 function Special() {
 	const [user, setUser] = useState(null);
+	const [checked, setChecked] = useState(false);
+
+	// ✅ Read the allowed user from .env
+	const allowedEmail = import.meta.env.VITE_SPECIAL_USER;
 
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user");
 		if (storedUser) {
-			setUser(JSON.parse(storedUser));
+			const parsedUser = JSON.parse(storedUser);
+
+			// ✅ Compare against env email
+			if (parsedUser.email === allowedEmail) {
+				setUser(parsedUser);
+			}
 		}
-	}, []);
+		setChecked(true);
+	}, [allowedEmail]);
+
+	if (!checked) {
+		return <div className="text-center mt-24">Checking access...</div>;
+	}
+
+	if (!user) {
+		// 🚫 No access → fake 404
+		return (
+			<div className="p-10 text-center mt-24">
+				<h1 className="text-3xl font-bold text-red-500 mb-4">404</h1>
+				<p className="text-lg text-gray-600">This page does not exist.</p>
+			</div>
+		);
+	}
 
 	const name = "Sulochana";
 
