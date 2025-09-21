@@ -6,6 +6,8 @@ import InfoSection from "../components/InfoSection";
 import Hotels from "../components/Hotels";
 import Activities from "../components/Activities";
 import Notes from "../components/Notes";
+import ExpensesBreakdown from "../components/ExpensesBreakdown";
+import ShareButton from "../components/ShareButton";
 import { Button } from "@/components/ui/button";
 
 function ViewTrip() {
@@ -58,35 +60,13 @@ function ViewTrip() {
 		},
 	];
 
-	// ✅ Share Trip Handler
-	const handleShare = () => {
-		const shareUrl = `${window.location.origin}/view-trip/${tripId}`;
-		const shareData = {
-			title: `Trip to ${trip?.tripData?.destination || "Destination"}`,
-			text: "Check out this amazing trip itinerary I created!",
-			url: shareUrl,
-		};
-
-		if (navigator.share) {
-			navigator
-				.share(shareData)
-				.catch((err) => console.error("Error sharing trip:", err));
-		} else {
-			navigator.clipboard.writeText(shareUrl);
-			alert("Link copied to clipboard!");
-		}
-	};
-
 	return (
 		<div className="p-6 md:px-12 lg:px-20 xl:px-32">
 			{/* Header */}
-			<div className="flex justify-between items-center mb-8">
+			<div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
 				<h1 className="text-3xl font-extrabold text-primary">
 					{trip?.tripData?.destination || "Trip Details"}
 				</h1>
-				<Button onClick={handleShare} variant="soft" className="rounded-full">
-					Share Trip
-				</Button>
 			</div>
 
 			{/* Layout */}
@@ -94,9 +74,22 @@ function ViewTrip() {
 				{/* Left: Main Trip Details */}
 				<div className="lg:col-span-2 space-y-10">
 					<InfoSection trip={trip} />
+					<ShareButton
+						tripId={tripId}
+						destination={trip?.tripData?.destination}
+					/>
 					<Hotels trip={trip} />
 					<Activities trip={trip} />
+					<ExpensesBreakdown trip={trip} />
 					<Notes trip={trip} />
+					<div className="space-y-4">
+						<input
+							type="text"
+							placeholder="Enter any changes you'd like..."
+							className="w-full rounded-md border px-3 py-2"
+						/>
+						<Button className="w-full rounded-full">Book Now</Button>
+					</div>
 				</div>
 
 				{/* Right: Recommended Trips */}
