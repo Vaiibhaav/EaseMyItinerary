@@ -1,5 +1,6 @@
 // src/components/layout/Footer.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Footer() {
 	return (
@@ -21,7 +22,7 @@ function Footer() {
 
 				{/* Center links */}
 				<div className="flex gap-5">
-					<a href="/about" className="hover:text-primary transition-colors">
+					<a href="/about" className="hover:text-primary transition-colors" >
 						About
 					</a>
 					<a href="/contact" className="hover:text-primary transition-colors">

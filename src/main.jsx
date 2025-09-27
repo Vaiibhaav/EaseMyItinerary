@@ -12,6 +12,10 @@ import ViewTrip from "./view-trip/[tripId]/index.jsx";
 import MyTrips from "./my-trips/index.jsx";
 import Footer from "./components/ui/custom/Footer.jsx";
 import Special from "./components/ui/custom/Special.jsx";
+import About from "./components/ui/custom/About";
+import Contact from "./components/ui/custom/Contact";
+import PrivacyPolicy from "./components/ui/custom/PrivacyPolicy";
+import Terms from "./components/ui/custom/Terms";
 
 const router = createBrowserRouter([
 	{
@@ -31,6 +35,22 @@ const router = createBrowserRouter([
 		element: <MyTrips />,
 	},
 	{ path: "/special", element: <Special name="Sulochana" /> },
+	{
+		path: "/about",
+		element: <About />,
+	},
+	{
+		path: "/contact",
+		element: <Contact />,
+	},
+	{
+		path: "/privacy",
+		element: <PrivacyPolicy />,
+	},
+	{
+		path: "/terms",
+		element: <Terms />,
+	},
 ]);
 
 createRoot(document.getElementById("root")).render(
