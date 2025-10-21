@@ -40,46 +40,63 @@ const HeritageShowcase = () => {
 				{heritageImages.map((item, i) => {
 					const start = i * step;
 					const end = start + step;
+					const fromLeft = i % 2 === 0;
 
+					// Smooth appear/disappear
 					const opacity = useTransform(
 						scrollYProgress,
 						[start, start + step * 0.25, end - step * 0.25, end],
 						[0, 1, 1, 0]
 					);
-					const scale = useTransform(scrollYProgress, [start, end], [1.15, 1]);
-					const y = useTransform(scrollYProgress, [start, end], [80, 0]);
-					const textY = useTransform(scrollYProgress, [start, end], [50, 0]);
+
+					// Image slides from one side
+					const xImage = useTransform(
+						scrollYProgress,
+						[start, start + step * 0.25, end - step * 0.25, end],
+						fromLeft
+							? ["-100%", "0%", "0%", "-100%"]
+							: ["100%", "0%", "0%", "100%"]
+					);
+
+					// Text slides from the opposite side
+					const xText = useTransform(
+						scrollYProgress,
+						[start, start + step * 0.25, end - step * 0.25, end],
+						fromLeft
+							? ["100%", "0%", "0%", "100%"]
+							: ["-100%", "0%", "0%", "-100%"]
+					);
 
 					return (
 						<motion.div
 							key={i}
-							style={{ opacity, scale, y }}
-							className="absolute inset-0 flex flex-col items-center justify-center"
+							className="absolute inset-0 flex h-full w-full"
+							style={{ opacity }}
 						>
-							{/* Fullscreen Image */}
-							<div className="relative w-screen h-screen overflow-hidden">
-								<motion.img
+							{/* Image Section (80%) */}
+							<motion.div
+								className="relative h-full w-[80%] overflow-hidden"
+								style={{ x: xImage }}
+							>
+								<img
 									src={item.src}
 									alt={item.title}
-									className="absolute inset-0 w-full h-full object-cover"
+									className="w-full h-full object-cover"
 								/>
-							</div>
+							</motion.div>
 
-							{/* Elegant Text Overlay */}
+							{/* Text Section (20%) */}
 							<motion.div
-								style={{ opacity, y: textY }}
-								className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10"
+								className="flex flex-col justify-center items-start px-10 text-black bg-transparent w-[20%]"
+								style={{ x: xText }}
 							>
-								<h2 className="text-4xl md:text-6xl font-bold tracking-wide text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.6)] mb-4">
+								<h2 className="text-3xl md:text-5xl font-bold mb-4">
 									{item.title}
 								</h2>
-								<p className="max-w-2xl text-base md:text-xl text-gray-200 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
+								<p className="text-base md:text-lg text-gray-700">
 									{item.desc}
 								</p>
 							</motion.div>
-
-							{/* optional subtle overlay for readability */}
-							<div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/30" />
 						</motion.div>
 					);
 				})}
