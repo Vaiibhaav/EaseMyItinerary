@@ -1,4 +1,3 @@
-// src/service/AIModal.jsx
 import { GoogleGenAI } from "@google/genai";
 
 // INIT
@@ -13,15 +12,13 @@ const ai = new GoogleGenAI({
 function extractText(response) {
 	if (!response) return "";
 
-	// Structured shape (rare, but handle)
-	if (typeof response === "object" && response.tripData) {
-		return null;
-	}
+	// If we get a structured object that already looks like trip data, return null
+	// (so later we will attempt to parse differently)
+	if (typeof response === "object" && response.tripData) return null;
 
 	if (typeof response.text === "string") return response.text;
 	if (typeof response.outputText === "string") return response.outputText;
 
-	// Common Gemini shape
 	if (Array.isArray(response.output)) {
 		let combined = "";
 		for (const block of response.output) {
@@ -37,14 +34,12 @@ function extractText(response) {
 		if (combined.trim()) return combined;
 	}
 
-	// Candidates array
 	if (Array.isArray(response.candidates)) {
 		return response.candidates
 			.map((c) => c.output_text || c.content || JSON.stringify(c))
 			.join("\n");
 	}
 
-	// Fallback
 	try {
 		return JSON.stringify(response);
 	} catch {
@@ -68,6 +63,7 @@ function tryParseJsonFromText(text) {
 	try {
 		return JSON.parse(cleaned);
 	} catch {
+		// Try to extract the first {...} block
 		const match = cleaned.match(/(\{[\s\S]*\})/);
 		if (match) {
 			try {
@@ -87,8 +83,8 @@ function tryParseJsonFromText(text) {
 function normalizeItinerary(raw) {
 	if (!raw || typeof raw !== "object") return null;
 
-	// Base stable schema
 	const normalized = {
+		from: raw.from || raw.tripData?.from || "",
 		destination: raw.destination || raw.tripData?.destination || "",
 		start_date: raw.start_date || raw.tripData?.startDate || "",
 		number_of_days:
@@ -115,22 +111,45 @@ function normalizeItinerary(raw) {
 }
 
 // -----------------------------
-// Main function
+// Main Function
 // -----------------------------
 
-export default async function getItinerary(formData) {
+export default async function getItinerary(formData = {}) {
+	// Safe defaults to avoid runtime errors
+	const safeThemes = Array.isArray(formData.themes) ? formData.themes : [];
+	const safeDays = formData.days ?? "";
+	const safePeople = formData.people ?? "";
+	const safeBudget = formData.budget ?? "";
+	const safeTime = formData.time ?? "";
+	const safeTravelMode = formData.travelMode ?? "";
+	const safeAccommodation = formData.accommodation ?? "";
+	const safeStartDate = formData.startDate ?? "";
+	const safeLanguage = formData.language ?? "English";
+
+	const from =
+		typeof formData.from === "object"
+			? formData.from.label || formData.from.value?.description || ""
+			: formData.from || "";
+
 	const destination =
 		typeof formData.destination === "object"
-			? formData.destination.label || formData.destination.value?.description
-			: formData.destination;
+			? formData.destination.label ||
+			  formData.destination.value?.description ||
+			  ""
+			: formData.destination || "";
 
+	// Build a clear prompt. Keep schema but avoid JS-style comments inside the JSON object itself.
 	const prompt = `
 You are an expert AI travel planner.
-Return ONLY a valid JSON object, no markdown, no explanations.
 
-The JSON must match this schema exactly:
+The user is currently in "${from}" (starting city).
+They want to plan a trip to "${destination}". The itinerary should be for the destination city only.
+Return ONLY a valid JSON object — no markdown, no explanations.
+
+The JSON must follow this schema exactly:
 
 {
+  "from": "string",
   "destination": "string",
   "start_date": "YYYY-MM-DD",
   "number_of_days": "number",
@@ -146,6 +165,7 @@ The JSON must match this schema exactly:
       "date": "YYYY-MM-DD",
       "day_of_week": "string",
       "theme_focus": "string",
+      "arrival_summary": "string",
       "accommodation": {
         "name": "string",
         "location": "string",
@@ -173,23 +193,25 @@ The JSON must match this schema exactly:
 }
 
 Inputs:
-- Destination: ${destination}
-- Number of days: ${formData.days}
-- Number of people: ${formData.people}
-- Budget (INR): ${formData.budget}
-- Themes: ${formData.themes.join(", ")}
-- Available time per day: ${formData.time}
-- Travel mode preference: ${formData.travelMode}
-- Accommodation preference: ${formData.accommodation}
-- Start date: ${formData.startDate}
-- Language preference: ${formData.language}
+- Current city (from): ${from}
+- Trip destination: ${destination}
+- Number of days: ${safeDays}
+- Number of people: ${safePeople}
+- Budget (INR): ${safeBudget}
+- Themes: ${safeThemes.join(", ")}
+- Available time per day: ${safeTime}
+- Travel mode preference: ${safeTravelMode}
+- Accommodation preference: ${safeAccommodation}
+- Start date: ${safeStartDate}
+- Language preference: ${safeLanguage}
 
-Important:
-- All textual fields (description, notes, warnings, accommodation name/location, theme_focus, day_of_week) must be written in ${
-		formData.language
-	}.
-- Only numeric/date fields remain in English/standard formats.
-- Return ONLY a valid JSON object, no markdown, no explanations.
+Guidelines:
+1. Include a short "arrival_summary" only on Day 1 describing the journey from ${from} to ${destination}.
+2. All subsequent days focus entirely on ${destination}.
+3. Keep itinerary realistic and optimized for the user's preferences.
+4. All textual content should be in ${safeLanguage}.
+5. Only numeric/date fields remain in standard formats.
+6. Return ONLY the JSON object.
 `;
 
 	// Call AI
@@ -204,30 +226,68 @@ Important:
 		throw err;
 	}
 
-	console.log("AI raw response:", response);
+	console.debug("AI raw response:", response);
 
-	// Try extracting
+	// extract text safely
 	const text = extractText(response);
-	let parsed = tryParseJsonFromText(text);
-
-	// Normalize
-	if (parsed) {
-		return normalizeItinerary(parsed);
+	if (!text) {
+		// If extractText returned null but response is object, try to use it directly
+		if (response && typeof response === "object") {
+			// If it already contains a parsed JSON-like shape, normalize and return
+			const maybeObj = response.tripData ?? response;
+			const normalized = normalizeItinerary(maybeObj);
+			if (normalized) return normalized;
+		}
 	}
 
-	// Fallback
+	let parsed = null;
+	if (text) parsed = tryParseJsonFromText(text);
+
+	if (parsed) {
+		const normalized = normalizeItinerary(parsed);
+		if (normalized) return normalized;
+		// if normalization fails, still return parsed
+		return parsed;
+	}
+
+	// Fallback if AI output invalid
 	return {
-		destination: destination,
-		start_date: formData.startDate,
-		number_of_days: Number(formData.days),
-		number_of_people: Number(formData.people),
-		budget_inr: Number(formData.budget),
-		themes: formData.themes,
-		language_preference: formData.language,
-		travel_mode_preference: formData.travelMode,
-		accommodation_preference: formData.accommodation,
-		notes: "Fallback itinerary – AI did not return valid JSON.",
-		daily_itinerary: [],
+		from,
+		destination,
+		start_date: safeStartDate,
+		number_of_days: Number(safeDays) || 0,
+		number_of_people: Number(safePeople) || 1,
+		budget_inr: Number(safeBudget) || null,
+		themes: safeThemes,
+		language_preference: safeLanguage,
+		travel_mode_preference: safeTravelMode,
+		accommodation_preference: safeAccommodation,
+		notes:
+			"Fallback itinerary – AI did not return valid JSON. Includes basic structure only.",
+		daily_itinerary: [
+			{
+				date: safeStartDate || "",
+				day_of_week: "Day 1",
+				theme_focus: safeThemes[0] || "",
+				arrival_summary: `Travel from ${from || "your city"} to ${
+					destination || "the destination"
+				}`,
+				accommodation: {
+					name: "TBD Hotel",
+					location: destination || "",
+					notes: "",
+				},
+				activities: [],
+				budget_estimate_usd: {
+					accommodation: 0,
+					food_drinks: 0,
+					shopping: 0,
+					nightlife: 0,
+					transport: 0,
+					miscellaneous: 0,
+				},
+			},
+		],
 		warnings: ["AI response could not be parsed, fallback schema applied."],
 	};
 }

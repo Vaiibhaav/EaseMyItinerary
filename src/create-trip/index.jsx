@@ -1,5 +1,5 @@
-// src/create-trip/index.jsx
 import React, { useState, useEffect } from "react";
+import FromInput from "@/components/ui/trip/inputs/FromInput"; // 🆕 Added import
 import DestinationInput from "@/components/ui/trip/inputs/DestinationInput";
 import DaysInput from "@/components/ui/trip/inputs/DaysInput";
 import PeopleInput from "@/components/ui/trip/inputs/PeopleInput";
@@ -29,6 +29,7 @@ const apiKey = import.meta.env.VITE_GOOGLE_PLACE_API_KEY;
 
 function CreateTrip() {
 	const [formData, setFormData] = useState({
+		from: null, // 🆕 Starting Location
 		destination: null,
 		days: "",
 		people: "",
@@ -56,6 +57,8 @@ function CreateTrip() {
 
 	const validateForm = () => {
 		const newErrors = {};
+
+		if (!formData.from) newErrors.from = "Starting location is required";
 		if (!formData.destination)
 			newErrors.destination = "Destination is required";
 		if (
@@ -197,6 +200,15 @@ function CreateTrip() {
 
 				{/* Form inputs */}
 				<div className="mt-10 mb-12 flex flex-col gap-8">
+					{/* 🆕 Starting Location Input */}
+					<FromInput
+						value={formData.from}
+						onChange={(v) => handleInputChange("from", v)}
+						apiKey={apiKey}
+					/>
+					{errors.from && <p className="text-red-500 text-sm">{errors.from}</p>}
+
+					{/* Destination Input */}
 					<DestinationInput
 						value={formData.destination}
 						onChange={(v) => handleInputChange("destination", v)}

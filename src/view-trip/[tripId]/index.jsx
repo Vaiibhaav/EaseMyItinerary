@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../service/firebaseConfig";
 import InfoSection from "../components/InfoSection";
 import Hotels from "../components/Hotels";
@@ -9,24 +9,74 @@ import Notes from "../components/Notes";
 import ExpensesBreakdown from "../components/ExpensesBreakdown";
 import ShareButton from "../components/ShareButton";
 import { Button } from "@/components/ui/button";
+import { GoogleGenAI } from "@google/genai";
+import handleRegenerateTrip from "../../service/handleRegenerateTrip";
+
+
+const ai = new GoogleGenAI({
+	apiKey: import.meta.env.VITE_GOOGLE_GEMINI_AI_API_KEY,
+});
 
 function ViewTrip() {
 	const { tripId } = useParams();
 	const [trip, setTrip] = useState(null);
+	const [updatePrompt, setUpdatePrompt] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		tripId && getTripData();
+		if (tripId) getTripData();
 	}, [tripId]);
 
 	const getTripData = async () => {
-		const docRef = doc(db, "AiTrips", tripId);
-		const docSnap = await getDoc(docRef);
-		if (docSnap.exists()) {
-			setTrip(docSnap.data());
-		} else {
-			console.log("No Such Data");
+		try {
+			const docRef = doc(db, "AiTrips", tripId);
+			const docSnap = await getDoc(docRef);
+			if (docSnap.exists()) {
+				setTrip(docSnap.data());
+			} else {
+				console.log("No Such Data");
+			}
+		} catch (err) {
+			console.error("Error fetching trip data:", err);
 		}
 	};
+
+	// -----------------------------
+	// AI Update Function
+	// -----------------------------
+	const handleRegenerateTripClick = async () => {
+		if (!updatePrompt.trim() || !trip) return;
+		setLoading(true);
+
+		try {
+			const updatedTripData = await handleRegenerateTrip(
+				trip.tripData,
+				updatePrompt
+			);
+
+			// Update UI
+			setTrip((prev) => ({
+				...prev,
+				tripData: updatedTripData,
+			}));
+
+			// Save updated itinerary to Firestore
+			await setDoc(doc(db, "AiTrips", tripId), {
+				...trip,
+				tripData: updatedTripData,
+				updatedAt: new Date().toISOString(),
+			});
+
+			alert("✅ Trip itinerary updated successfully!");
+			setUpdatePrompt("");
+		} catch (err) {
+			console.error("Error regenerating trip:", err);
+			alert("Failed to regenerate itinerary. Please refine your request.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
 
 	if (!trip)
 		return (
@@ -82,13 +132,23 @@ function ViewTrip() {
 					<Activities trip={trip} />
 					<ExpensesBreakdown trip={trip} />
 					<Notes trip={trip} />
+
+					{/* Input box for regeneration */}
 					<div className="space-y-4">
-						<input
-							type="text"
-							placeholder="Enter any changes you'd like..."
-							className="w-full rounded-md border px-3 py-2"
+						<textarea
+							value={updatePrompt}
+							onChange={(e) => setUpdatePrompt(e.target.value)}
+							placeholder="Describe the changes you'd like (e.g., Make it 3 days, add beaches, increase budget...)"
+							className="w-full rounded-md border px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-primary resize-none"
+							rows={3}
 						/>
-						<Button className="w-full rounded-full">Book Now</Button>
+						<Button
+							onClick={handleRegenerateTripClick}
+							disabled={loading}
+							className="w-full rounded-full text-lg"
+						>
+							{loading ? "Regenerating..." : "Regenerate Itinerary"}
+						</Button>
 					</div>
 				</div>
 
@@ -127,3 +187,4 @@ function ViewTrip() {
 }
 
 export default ViewTrip;
+	
