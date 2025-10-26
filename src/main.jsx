@@ -16,6 +16,8 @@ import About from "./components/ui/custom/About";
 import Contact from "./components/ui/custom/Contact";
 import PrivacyPolicy from "./components/ui/custom/PrivacyPolicy";
 import Terms from "./components/ui/custom/Terms";
+import Booking from "./components/ui/custom/Booking.jsx";
+import PaymentButton from "./service/RazorPay/PaymentButton.jsx";
 
 const router = createBrowserRouter([
 	{
@@ -51,6 +53,14 @@ const router = createBrowserRouter([
 		path: "/terms",
 		element: <Terms />,
 	},
+	{
+		path: "/payment",
+		element: <PaymentButton />,
+	},
+	{
+		path: "/booking",
+		element: <Booking />,
+	}
 ]);
 
 createRoot(document.getElementById("root")).render(
