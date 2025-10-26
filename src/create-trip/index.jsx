@@ -10,6 +10,7 @@ import TravelModeInput from "@/components/ui/trip/inputs/TravelModeInput";
 import AccommodationInput from "@/components/ui/trip/inputs/AccommodationInput";
 import StartDateInput from "@/components/ui/trip/inputs/StartDateInput";
 import LanguageInput from "@/components/ui/trip/inputs/LanguageInput";
+import FromLocationInput from "@/components/ui/trip/inputs/FromLocationInput";
 import { Button } from "@/components/ui/button";
 import getItinerary from "@/service/AIModal";
 import {
@@ -29,6 +30,7 @@ const apiKey = import.meta.env.VITE_GOOGLE_PLACE_API_KEY;
 
 function CreateTrip() {
 	const [formData, setFormData] = useState({
+		from: "",
 		destination: null,
 		days: "",
 		people: "",
@@ -40,6 +42,7 @@ function CreateTrip() {
 		startDate: "",
 		language: "",
 	});
+
 
 	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
@@ -56,6 +59,7 @@ function CreateTrip() {
 
 	const validateForm = () => {
 		const newErrors = {};
+		if (!formData.from) newErrors.from = "Starting location is required";
 		if (!formData.destination)
 			newErrors.destination = "Destination is required";
 		if (
@@ -196,6 +200,14 @@ function CreateTrip() {
 				</p>
 
 				{/* Form inputs */}
+				{/* From Location */}
+				<FromLocationInput
+					value={formData.from}
+					onChange={(v) => handleInputChange("from", v)}
+					apiKey={apiKey}
+				/>
+				{errors.from && <p className="text-red-500 text-sm">{errors.from}</p>}
+
 				<div className="mt-10 mb-12 flex flex-col gap-8">
 					<DestinationInput
 						value={formData.destination}

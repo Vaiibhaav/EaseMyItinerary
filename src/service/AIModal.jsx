@@ -1,4 +1,3 @@
-// src/service/AIModal.jsx
 import { GoogleGenAI } from "@google/genai";
 
 // INIT
@@ -13,15 +12,10 @@ const ai = new GoogleGenAI({
 function extractText(response) {
 	if (!response) return "";
 
-	// Structured shape (rare, but handle)
-	if (typeof response === "object" && response.tripData) {
-		return null;
-	}
-
+	if (typeof response === "object" && response.tripData) return null;
 	if (typeof response.text === "string") return response.text;
 	if (typeof response.outputText === "string") return response.outputText;
 
-	// Common Gemini shape
 	if (Array.isArray(response.output)) {
 		let combined = "";
 		for (const block of response.output) {
@@ -37,14 +31,12 @@ function extractText(response) {
 		if (combined.trim()) return combined;
 	}
 
-	// Candidates array
 	if (Array.isArray(response.candidates)) {
 		return response.candidates
 			.map((c) => c.output_text || c.content || JSON.stringify(c))
 			.join("\n");
 	}
 
-	// Fallback
 	try {
 		return JSON.stringify(response);
 	} catch {
@@ -87,8 +79,8 @@ function tryParseJsonFromText(text) {
 function normalizeItinerary(raw) {
 	if (!raw || typeof raw !== "object") return null;
 
-	// Base stable schema
 	const normalized = {
+		from: raw.from || raw.tripData?.from || "",
 		destination: raw.destination || raw.tripData?.destination || "",
 		start_date: raw.start_date || raw.tripData?.startDate || "",
 		number_of_days:
@@ -124,6 +116,11 @@ export default async function getItinerary(formData) {
 			? formData.destination.label || formData.destination.value?.description
 			: formData.destination;
 
+	const from =
+		typeof formData.from === "object"
+			? formData.from.label || formData.from.value?.description
+			: formData.from;
+
 	const prompt = `
 You are an expert AI travel planner.
 Return ONLY a valid JSON object, no markdown, no explanations.
@@ -131,6 +128,7 @@ Return ONLY a valid JSON object, no markdown, no explanations.
 The JSON must match this schema exactly:
 
 {
+  "from": "string",
   "destination": "string",
   "start_date": "YYYY-MM-DD",
   "number_of_days": "number",
@@ -159,6 +157,11 @@ The JSON must match this schema exactly:
           "location": "string"
         }
       ],
+      "travel": {
+        "mode": "string",
+        "details": "string",
+        "price_inr": "number"
+      },
       "budget_estimate_usd": {
         "accommodation": "number",
         "food_drinks": "number",
@@ -173,6 +176,7 @@ The JSON must match this schema exactly:
 }
 
 Inputs:
+- From: ${from}
 - Destination: ${destination}
 - Number of days: ${formData.days}
 - Number of people: ${formData.people}
@@ -185,6 +189,9 @@ Inputs:
 - Language preference: ${formData.language}
 
 Important:
+- The itinerary must start from "${from}" and reach "${destination}".
+- Include realistic transport details (flight, cab, train) between the origin and destination with estimated INR cost.
+- Ensure each day's itinerary mentions accommodation, transport if needed, and activities.
 - All textual fields (description, notes, warnings, accommodation name/location, theme_focus, day_of_week) must be written in ${
 		formData.language
 	}.
@@ -192,7 +199,6 @@ Important:
 - Return ONLY a valid JSON object, no markdown, no explanations.
 `;
 
-	// Call AI
 	let response;
 	try {
 		response = await ai.models.generateContent({
@@ -206,18 +212,17 @@ Important:
 
 	console.log("AI raw response:", response);
 
-	// Try extracting
 	const text = extractText(response);
 	let parsed = tryParseJsonFromText(text);
 
-	// Normalize
 	if (parsed) {
 		return normalizeItinerary(parsed);
 	}
 
 	// Fallback
 	return {
-		destination: destination,
+		from,
+		destination,
 		start_date: formData.startDate,
 		number_of_days: Number(formData.days),
 		number_of_people: Number(formData.people),
