@@ -7,6 +7,12 @@ export default function PaymentButton({
 	tripSummary,
 	onPaymentSuccess,
 }) {
+	const BACKEND_URL =
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.BACKEND_URL ||
+    "http://localhost:3001";
+	
+	console.log("Using BACKEND_URL:", import.meta.env.VITE_API_URL);
 	const loadRazorpay = () => {
 		return new Promise((resolve) => {
 			if (window.Razorpay) {
@@ -38,7 +44,7 @@ export default function PaymentButton({
 
 			// Create order just for consistent flow (optional)
 			const { data: order } = await axios.post(
-				"http://localhost:3001/create-order",
+				`${BACKEND_URL}/create-order`,
 				{
 					amount: amtPaise,
 					currency: "INR",
@@ -66,16 +72,16 @@ export default function PaymentButton({
 
 						// Call email API
 						const emailRes = await axios.post(
-							"http://localhost:3001/send-booking-receipt",
-							{
-								email: userEmail,
-								summary: tripSummary || {
-									destination: "Unknown Destination",
-									total: amountInRupees,
-									selected: [],
-								},
-							}
-						);
+              			`${BACKEND_URL}/send-booking-receipt`,
+              {
+                email: userEmail,
+                summary: tripSummary || {
+                  destination: "Unknown Destination",
+                  total: amountInRupees,
+                  selected: [],
+                },
+              }
+            );
 
 						if (emailRes.data?.success) {
 							alert("✅ Payment confirmed and booking email sent!");
