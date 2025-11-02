@@ -105,9 +105,10 @@ export default function PaymentButton({
 	return (
 		<button
 			onClick={handlePay}
-			className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary/80 transition"
+			disabled={!amountInRupees || amountInRupees <= 0}
+			className="w-full bg-[#E67E22] hover:bg-[#D35400] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:shadow-none"
 		>
-			Pay ₹{amountInRupees || 0}
+			{amountInRupees > 0 ? `Pay ₹${amountInRupees.toLocaleString()}` : "Select items to pay"}
 		</button>
 	);
 }

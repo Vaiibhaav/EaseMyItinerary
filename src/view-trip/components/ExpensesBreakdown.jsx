@@ -45,13 +45,16 @@ function ExpensesBreakdown({ trip }) {
 	const grandTotal = chartData.reduce((a, b) => a + b.value, 0);
 
 	return (
-		<section className="bg-card rounded-xl p-6 border border-border shadow-md">
-			<h2 className="text-2xl font-bold mb-6 text-foreground">
-				Expenses Breakdown
-			</h2>
+		<section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-cyan-200/50 p-5">
+			<div className="flex items-center gap-3 mb-5">
+				<h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent whitespace-nowrap">
+					💰 Expenses
+				</h2>
+				<div className="flex-grow border-t-2 border-cyan-200"></div>
+			</div>
 
 			{/* Pie Chart */}
-			<div className="w-full h-72 flex items-center justify-center">
+			<div className="w-full h-56 flex items-center justify-center mb-4">
 				<ResponsiveContainer>
 					<PieChart>
 						<Pie
@@ -60,7 +63,7 @@ function ExpensesBreakdown({ trip }) {
 							nameKey="name"
 							cx="50%"
 							cy="50%"
-							outerRadius={110}
+							outerRadius={85}
 						>
 							{chartData.map((entry, index) => (
 								<Cell
@@ -77,30 +80,30 @@ function ExpensesBreakdown({ trip }) {
 			</div>
 
 			{/* Category Breakdown Table */}
-			<div className="mt-6 space-y-2">
+			<div className="space-y-2">
 				{chartData.map((item, index) => (
 					<div
 						key={item.name}
-						className="flex justify-between items-center text-sm bg-muted/30 p-2 rounded-md"
+						className="flex justify-between items-center text-sm bg-gradient-to-r from-blue-50 to-cyan-50 p-2.5 rounded-lg border border-cyan-100"
 					>
 						<div className="flex items-center gap-2">
 							<span
-								className="w-3 h-3 rounded-full"
+								className="w-3 h-3 rounded-full shadow-sm"
 								style={{ backgroundColor: COLORS[index % COLORS.length] }}
 							></span>
-							<span className="capitalize text-foreground">{item.name}</span>
+							<span className="capitalize text-gray-700 font-medium">{item.name}</span>
 						</div>
-						<span className="font-medium text-foreground">
-							₹ {item.value.toLocaleString()}
+						<span className="font-bold text-gray-800">
+							₹{item.value.toLocaleString()}
 						</span>
 					</div>
 				))}
 			</div>
 
 			{/* Grand Total */}
-			<div className="mt-6 p-4 rounded-lg bg-muted/40 flex justify-between items-center font-semibold text-lg text-foreground">
-				<span>Total</span>
-				<span>₹ {grandTotal.toLocaleString()}</span>
+			<div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 flex justify-between items-center text-white shadow-lg">
+				<span className="font-bold text-base">Total Budget</span>
+				<span className="font-extrabold text-xl">₹{grandTotal.toLocaleString()}</span>
 			</div>
 		</section>
 	);

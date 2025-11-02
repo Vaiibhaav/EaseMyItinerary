@@ -22,20 +22,8 @@ function ShareButton({ tripId, destination }) {
 	return (
 		<button
 			onClick={handleShare}
-			className="
-        flex items-center gap-2
-        px-5 py-3
-        border border-border 
-        rounded-xl 
-        bg-card 
-        shadow-sm 
-        hover:shadow-md hover:-translate-y-1 
-        transition-all cursor-pointer
-        whitespace-nowrap
-        font-medium text-foreground
-      "
+			className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 cursor-pointer"
 		>
-			{/* paper plane icon */}
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				className="h-5 w-5"

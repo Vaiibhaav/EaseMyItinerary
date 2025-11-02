@@ -1,6 +1,21 @@
 {
 	"welcome": "EaseMyItinerary-க்கு வரவேற்கிறோம்",
-	"book_now": "இப்போது பதிவு செய்க",
+	"book_now": "இப்போது பதிவு செய்க",
 	"my_trips": "என் பயணங்கள்",
-	"settings": "அமைப்புகள்"
+	"settings": "அமைப்புகள்",
+	"AI-Powered Itineraries": "AI-இயக்கப்படும் பயண திட்டங்கள்",
+	"Tailored, Bookable, Instant.": "தனிப்பயனாக்கப்பட்ட, பதிவு செய்யக்கூடிய, உடனடி.",
+	"Generate end-to-end, optimized itineraries based on budget, time, and interests. Adapt in real time and book everything with one click.": "பட்ஜெட், நேரம் மற்றும் ஆர்வங்களின் அடிப்படையில் முழுமையான, மேம்படுத்தப்பட்ட பயண திட்டங்களை உருவாக்குங்கள். நிகழ்நேரத்தில் தகவமைத்து ஒரே கிளிக்கில் அனைத்தையும் பதிவு செய்யுங்கள்.",
+	"From": "இருந்து",
+	"Destination": "இலக்கு",
+	"Start Date": "தொடக்க தேதி",
+	"Days & Travelers": "நாட்கள் & பயணிகள்",
+	"Show Additional Details": "கூடுதல் விவரங்களைக் காட்டு",
+	"Hide Additional Details": "கூடுதல் விவரங்களை மறை",
+	"Generate My Itinerary": "எனது பயண திட்டத்தை உருவாக்கு",
+	"Generating...": "உருவாக்குகிறது...",
+	"Sign in": "உள்நுழைக",
+	"Sign in with Google authentication securely": "Google அங்கீகாரத்துடன் பாதுகாப்பாக உள்நுழைக",
+	"Continue with Google": "Google உடன் தொடரவும்",
+	"Get Started": "தொடங்குக"
 }

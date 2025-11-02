@@ -2,5 +2,20 @@
 	"welcome": "EaseMyItinerary కి స్వాగతం",
 	"book_now": "ఇప్పుడే బుక్ చేయండి",
 	"my_trips": "నా ప్రయాణాలు",
-	"settings": "సెట్టింగ్స్"
+	"settings": "సెట్టింగ్స్",
+	"AI-Powered Itineraries": "AI-ఆధారిత ప్రయాణ ప్రణాళికలు",
+	"Tailored, Bookable, Instant.": "అనుకూలీకరించిన, బుక్ చేయగల, తక్షణ.",
+	"Generate end-to-end, optimized itineraries based on budget, time, and interests. Adapt in real time and book everything with one click.": "బడ్జెట్, సమయం మరియు ఆసక్తుల ఆధారంగా పూర్తి, అనుకూలీకరించిన ప్రయాణ ప్రణాళికలను రూపొందించండి. నిజ సమయంలో అనుకూలీకరించండి మరియు ఒక్క క్లిక్‌తో అన్నింటినీ బుక్ చేయండి.",
+	"From": "నుండి",
+	"Destination": "గమ్యం",
+	"Start Date": "ప్రారంభ తేదీ",
+	"Days & Travelers": "రోజులు & ప్రయాణికులు",
+	"Show Additional Details": "అదనపు వివరాలను చూపించు",
+	"Hide Additional Details": "అదనపు వివరాలను దాచు",
+	"Generate My Itinerary": "నా ప్రయాణ ప్రణాళికను రూపొందించు",
+	"Generating...": "రూపొందిస్తోంది...",
+	"Sign in": "సైన్ ఇన్ చేయండి",
+	"Sign in with Google authentication securely": "Google ప్రమాణీకరణతో సురక్షితంగా సైన్ ఇన్ చేయండి",
+	"Continue with Google": "Google తో కొనసాగించండి",
+	"Get Started": "ప్రారంభించండి"
 }

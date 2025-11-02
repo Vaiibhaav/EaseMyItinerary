@@ -292,7 +292,7 @@ function CreateTrip() {
 					<Button
 						onClick={onGenerateTrips}
 						disabled={loading}
-						className="px-8 py-3 text-lg rounded-full"
+						className="px-8 py-3 text-lg rounded-full bg-[#E67E22] hover:bg-[#D35400] text-white"
 					>
 						{loading ? "Generating..." : "Generate My Itinerary"}
 					</Button>

@@ -107,7 +107,7 @@ function normalizeItinerary(raw) {
 }
 
 // -----------------------------
-// Main function
+// Main Function
 // -----------------------------
 
 export default async function getItinerary(formData) {
@@ -121,7 +121,10 @@ export default async function getItinerary(formData) {
 			? formData.from.label || formData.from.value?.description
 			: formData.from;
 
-	const prompt = `
+	// 🧩 New: Allow "update itinerary" via additional_prompt
+	const prompt = formData.additional_prompt
+		? formData.additional_prompt
+		: `
 You are an expert AI travel planner.
 Return ONLY a valid JSON object, no markdown, no explanations.
 
@@ -193,8 +196,8 @@ Important:
 - Include realistic transport details (flight, cab, train) between the origin and destination with estimated INR cost.
 - Ensure each day's itinerary mentions accommodation, transport if needed, and activities.
 - All textual fields (description, notes, warnings, accommodation name/location, theme_focus, day_of_week) must be written in ${
-		formData.language
-	}.
+				formData.language
+		  }.
 - Only numeric/date fields remain in English/standard formats.
 - Return ONLY a valid JSON object, no markdown, no explanations.
 `;
@@ -219,7 +222,7 @@ Important:
 		return normalizeItinerary(parsed);
 	}
 
-	// Fallback
+	// 🛑 Fallback in case of invalid JSON
 	return {
 		from,
 		destination,

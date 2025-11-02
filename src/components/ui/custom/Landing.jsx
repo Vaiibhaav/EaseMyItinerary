@@ -10,16 +10,11 @@ import HeritageShowcase from "./HeritageShowcase";
 function Landing() {
 	return (
 		<>
-			{/* Regular content */}
+			{/* Hero Section - Full Width */}
 			<Hero />
-			{/* <FlyingPlane /> */}
-			{/* Make showcase full-screen scrollable outside flex context */}
-			<div className="w-full overflow-visible">
-				<HeritageShowcase />
-			</div>
 
-			{/* Resume normal layout below */}
-			<div className="flex flex-col items-center mx-6 md:mx-56 gap-14 relative z-10">
+			{/* Demo Reviews Section - Full Width */}
+			<div className="w-full relative z-10">
 				<DemoReviews />
 			</div>
 		</>

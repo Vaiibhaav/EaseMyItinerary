@@ -2,5 +2,20 @@
 	"welcome": "Welcome to EaseMyItinerary",
 	"book_now": "Book Now",
 	"my_trips": "My Trips",
-	"settings": "Settings"
+	"settings": "Settings",
+	"AI-Powered Itineraries": "AI-Powered Itineraries",
+	"Tailored, Bookable, Instant.": "Tailored, Bookable, Instant.",
+	"Generate end-to-end, optimized itineraries based on budget, time, and interests. Adapt in real time and book everything with one click.": "Generate end-to-end, optimized itineraries based on budget, time, and interests. Adapt in real time and book everything with one click.",
+	"From": "From",
+	"Destination": "Destination",
+	"Start Date": "Start Date",
+	"Days & Travelers": "Days & Travelers",
+	"Show Additional Details": "Show Additional Details",
+	"Hide Additional Details": "Hide Additional Details",
+	"Generate My Itinerary": "Generate My Itinerary",
+	"Generating...": "Generating...",
+	"Sign in": "Sign in",
+	"Sign in with Google authentication securely": "Sign in with Google authentication securely",
+	"Continue with Google": "Continue with Google",
+	"Get Started": "Get Started"
 }
