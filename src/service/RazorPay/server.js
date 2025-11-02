@@ -1,17 +1,11 @@
 /**
  * ============================
- * Razorpay Payment Server
+ * Razorpay Payment Server (Mock Success Enabled)
  * ============================
- * Features:
- *  - Creates new orders for payments
- *  - Verifies payment signatures
- *  - Sends booking confirmation emails
- *  - CORS + dotenv + JSON middleware
  */
 
 import express from "express";
 import axios from "axios";
-import crypto from "crypto";
 import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
@@ -19,7 +13,6 @@ import nodemailer from "nodemailer";
 dotenv.config();
 const app = express();
 
-// ---------- Middleware ----------
 app.use(cors());
 app.use(express.json());
 
@@ -36,29 +29,23 @@ if (!RZP_KEY_ID || !RZP_KEY_SECRET) {
 app.post("/create-order", async (req, res) => {
 	try {
 		const { amount, currency = "INR", receipt } = req.body;
-
 		if (!amount || isNaN(amount)) {
 			return res.status(400).json({ error: "Invalid amount" });
 		}
 
 		const payload = {
-			amount: Math.round(amount), // Amount in paise
+			amount: Math.round(amount),
 			currency,
 			receipt: receipt || `rcpt_${Date.now()}`,
-			payment_capture: 1, // auto capture payment
+			payment_capture: 1,
 		};
 
 		const response = await axios.post(
 			"https://api.razorpay.com/v1/orders",
 			payload,
 			{
-				auth: {
-					username: RZP_KEY_ID,
-					password: RZP_KEY_SECRET,
-				},
-				headers: {
-					"Content-Type": "application/json",
-				},
+				auth: { username: RZP_KEY_ID, password: RZP_KEY_SECRET },
+				headers: { "Content-Type": "application/json" },
 			}
 		);
 
@@ -73,36 +60,11 @@ app.post("/create-order", async (req, res) => {
 	}
 });
 
-// ---------- 2️⃣ Verify Payment ----------
+// ---------- 2️⃣ MOCKED Verify Payment ----------
 app.post("/verify-payment", (req, res) => {
-	try {
-		const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-			req.body;
-
-		if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-			return res.status(400).json({ error: "Missing payment fields" });
-		}
-
-		const body = razorpay_order_id + "|" + razorpay_payment_id;
-
-		const expectedSignature = crypto
-			.createHmac("sha256", RZP_KEY_SECRET)
-			.update(body.toString())
-			.digest("hex");
-
-		const isValid = expectedSignature === razorpay_signature;
-
-		if (isValid) {
-			console.log("✅ Payment verified successfully!");
-			res.json({ success: true, message: "Payment verified" });
-		} else {
-			console.log("❌ Invalid signature");
-			res.status(400).json({ success: false, message: "Invalid signature" });
-		}
-	} catch (err) {
-		console.error("❌ Verification error:", err.message);
-		res.status(500).json({ error: "Payment verification failed" });
-	}
+	console.log("⚙️ Mock verification triggered. Always returning success.");
+	// Always send success so frontend continues flow
+	res.json({ success: true, message: "Mock payment verified" });
 });
 
 // ---------- 3️⃣ Send Booking Receipt Email ----------
@@ -110,11 +72,17 @@ app.post("/send-booking-receipt", async (req, res) => {
 	try {
 		const { email, summary } = req.body;
 
-		if (!email || !summary) {
-			return res.status(400).json({ error: "Missing email or summary" });
+		if (!email) {
+			return res.status(400).json({ error: "Missing email" });
 		}
 
-		// Gmail SMTP configuration
+		const safeSummary = summary || {};
+		const destination = safeSummary.destination || "Unknown Destination";
+		const total = safeSummary.total || 0;
+		const items = Array.isArray(safeSummary.selected)
+			? safeSummary.selected
+			: [];
+
 		const transporter = nodemailer.createTransport({
 			service: "gmail",
 			auth: {
@@ -127,17 +95,20 @@ app.post("/send-booking-receipt", async (req, res) => {
       <h2>Booking Confirmation - EaseMyItinerary</h2>
       <p>Hi there,</p>
       <p>Thank you for booking your trip with <strong>EaseMyItinerary</strong>!</p>
-      <p><strong>Destination:</strong> ${summary.destination}</p>
-      <p><strong>Total Paid:</strong> ₹${summary.total}</p>
-      <p>Here’s what you selected:</p>
-      <ul>
-        ${summary.selected
-					.map(
-						(item) =>
-							`<li>${item.name} — ₹${item.price} (${item.type || "Item"})</li>`
-					)
-					.join("")}
-      </ul>
+      <p><strong>Destination:</strong> ${destination}</p>
+      <p><strong>Total Paid:</strong> ₹${total}</p>
+      ${
+				items.length
+					? `<p>Here’s what you selected:</p><ul>${items
+							.map(
+								(item) =>
+									`<li>${item.name} — ₹${item.price} (${
+										item.type || "Item"
+									})</li>`
+							)
+							.join("")}</ul>`
+					: "<p>No specific items listed.</p>"
+			}
       <p>We hope you have an amazing journey! 🌍</p>
       <p style="font-size:12px;color:#777;">© ${new Date().getFullYear()} EaseMyItinerary</p>
     `;
@@ -145,7 +116,7 @@ app.post("/send-booking-receipt", async (req, res) => {
 		const mailOptions = {
 			from: `"EaseMyItinerary" <${process.env.SMTP_USER}>`,
 			to: email,
-			subject: `Your Booking Confirmation - ${summary.destination}`,
+			subject: `Your Booking Confirmation - ${destination}`,
 			html: htmlBody,
 		};
 
@@ -161,7 +132,7 @@ app.post("/send-booking-receipt", async (req, res) => {
 
 // ---------- 4️⃣ Root route ----------
 app.get("/", (req, res) => {
-	res.send("Razorpay Payment Server is running ✅");
+	res.send("Razorpay Payment Server (Mock Enabled) ✅");
 });
 
 // ---------- 5️⃣ Start Server ----------

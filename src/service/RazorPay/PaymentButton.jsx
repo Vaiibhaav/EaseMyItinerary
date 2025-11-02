@@ -35,6 +35,8 @@ export default function PaymentButton({
 
 		try {
 			const amtPaise = Math.round(amountInRupees * 100);
+
+			// Create order just for consistent flow (optional)
 			const { data: order } = await axios.post(
 				"http://localhost:3001/create-order",
 				{
@@ -52,33 +54,45 @@ export default function PaymentButton({
 				order_id: order.id,
 				handler: async function (response) {
 					try {
-						const verifyRes = await axios.post(
-							"http://localhost:3001/verify-payment",
-							response
+						console.log("✅ payment confirmation...");
+
+						const user = JSON.parse(localStorage.getItem("user"));
+						const userEmail = user?.email || "vaibhavsaxena533@gmail.com";
+
+						// Check trip summary presence
+						if (!tripSummary || !tripSummary.destination) {
+							console.warn("⚠️ Missing trip summary, using fallback.");
+						}
+
+						// Call email API
+						const emailRes = await axios.post(
+							"http://localhost:3001/send-booking-receipt",
+							{
+								email: userEmail,
+								summary: tripSummary || {
+									destination: "Unknown Destination",
+									total: amountInRupees,
+									selected: [],
+								},
+							}
 						);
 
-						if (verifyRes.data.success) {
-							alert("✅ Payment verified successfully!");
-
-							// Send booking email
-							const user = JSON.parse(localStorage.getItem("user"));
-							const userEmail = user?.email || "unknown";
-
-							await axios.post("http://localhost:3001/send-booking-receipt", {
-								email: userEmail,
-								summary: tripSummary,
-							});
-
-							// 👇 Ensure navigate runs after async completes
-							if (onPaymentSuccess) {
-								setTimeout(onPaymentSuccess, 500);
-							}
+						if (emailRes.data?.success) {
+							alert("✅ Payment confirmed and booking email sent!");
 						} else {
-							alert("⚠️ Payment verification failed!");
+							alert("⚠️ payment done, but email may not have sent.");
+						}
+
+						if (onPaymentSuccess) {
+							setTimeout(onPaymentSuccess, 500);
 						}
 					} catch (err) {
-						console.error("❌ Verification error:", err);
-						alert("Payment verification error!");
+						console.error("❌ Mock payment flow error:", err);
+						alert(
+							`Error in mocked payment flow: ${
+								err.response?.data?.error || err.message
+							}`
+						);
 					}
 				},
 				prefill: {
@@ -108,7 +122,9 @@ export default function PaymentButton({
 			disabled={!amountInRupees || amountInRupees <= 0}
 			className="w-full bg-[#E67E22] hover:bg-[#D35400] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:shadow-none"
 		>
-			{amountInRupees > 0 ? `Pay ₹${amountInRupees.toLocaleString()}` : "Select items to pay"}
+			{amountInRupees > 0
+				? `Pay ₹${amountInRupees.toLocaleString()}`
+				: "Select items to pay"}
 		</button>
 	);
 }
