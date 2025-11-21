@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import "./i18n";
 import App from "./App.jsx";
 import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router-dom";
@@ -16,6 +17,9 @@ import About from "./components/ui/custom/About";
 import Contact from "./components/ui/custom/Contact";
 import PrivacyPolicy from "./components/ui/custom/PrivacyPolicy";
 import Terms from "./components/ui/custom/Terms";
+import Booking from "./components/ui/custom/Booking.jsx";
+import PaymentButton from "./service/RazorPay/PaymentButton.jsx";
+import MCPConsole from "./components/ui/MCPConsole.jsx";
 
 const router = createBrowserRouter([
 	{
@@ -51,6 +55,15 @@ const router = createBrowserRouter([
 		path: "/terms",
 		element: <Terms />,
 	},
+	{
+		path: "/payment",
+		element: <PaymentButton />,
+	},
+	{
+		path: "/booking",
+		element: <Booking />,
+	},
+	{ path: "/mcp-console", element: <MCPConsole /> }
 ]);
 
 createRoot(document.getElementById("root")).render(
@@ -60,7 +73,7 @@ createRoot(document.getElementById("root")).render(
 			<Header />
 
 			{/* Routed pages wrapped with bottom padding so footer never overlaps */}
-			<div className="pb-20">
+			<div className="pb-20 w-full">
 				<RouterProvider router={router} />
 			</div>
 

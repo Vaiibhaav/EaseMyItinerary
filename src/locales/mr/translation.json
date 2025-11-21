@@ -2,5 +2,20 @@
 	"welcome": "EaseMyItinerary मध्ये आपले स्वागत आहे",
 	"book_now": "आता बुक करा",
 	"my_trips": "माझ्या सहली",
-	"settings": "सेटिंग्ज"
+	"settings": "सेटिंग्ज",
+	"AI-Powered Itineraries": "AI-चालित प्रवास योजना",
+	"Tailored, Bookable, Instant.": "अनुकूलित, बुक करण्यायोग्य, त्वरित।",
+	"Generate end-to-end, optimized itineraries based on budget, time, and interests. Adapt in real time and book everything with one click.": "बजेट, वेळ आणि आवडीनुसार संपूर्ण, अनुकूलित प्रवास योजना तयार करा। रिअल टाइममध्ये अनुकूलित करा आणि एका क्लिकवर सर्वकाही बुक करा।",
+	"From": "येथून",
+	"Destination": "गंतव्य",
+	"Start Date": "सुरुवात तारीख",
+	"Days & Travelers": "दिवस आणि प्रवासी",
+	"Show Additional Details": "अतिरिक्त तपशील दाखवा",
+	"Hide Additional Details": "अतिरिक्त तपशील लपवा",
+	"Generate My Itinerary": "माझी प्रवास योजना तयार करा",
+	"Generating...": "तयार करत आहे...",
+	"Sign in": "साइन इन करा",
+	"Sign in with Google authentication securely": "Google प्रमाणीकरणासह सुरक्षितपणे साइन इन करा",
+	"Continue with Google": "Google सह सुरू ठेवा",
+	"Get Started": "सुरू करा"
 }

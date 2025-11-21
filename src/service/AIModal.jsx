@@ -12,10 +12,7 @@ const ai = new GoogleGenAI({
 function extractText(response) {
 	if (!response) return "";
 
-	// If we get a structured object that already looks like trip data, return null
-	// (so later we will attempt to parse differently)
 	if (typeof response === "object" && response.tripData) return null;
-
 	if (typeof response.text === "string") return response.text;
 	if (typeof response.outputText === "string") return response.outputText;
 
@@ -138,8 +135,10 @@ export default async function getItinerary(formData = {}) {
 			  ""
 			: formData.destination || "";
 
-	// Build a clear prompt. Keep schema but avoid JS-style comments inside the JSON object itself.
-	const prompt = `
+	// 🧩 New: Allow "update itinerary" via additional_prompt
+	const prompt = formData.additional_prompt
+		? formData.additional_prompt
+		: `
 You are an expert AI travel planner.
 
 The user is currently in "${from}" (starting city).
@@ -179,6 +178,11 @@ The JSON must follow this schema exactly:
           "location": "string"
         }
       ],
+      "travel": {
+        "mode": "string",
+        "details": "string",
+        "price_inr": "number"
+      },
       "budget_estimate_usd": {
         "accommodation": "number",
         "food_drinks": "number",
@@ -193,28 +197,29 @@ The JSON must follow this schema exactly:
 }
 
 Inputs:
-- Current city (from): ${from}
-- Trip destination: ${destination}
-- Number of days: ${safeDays}
-- Number of people: ${safePeople}
-- Budget (INR): ${safeBudget}
-- Themes: ${safeThemes.join(", ")}
-- Available time per day: ${safeTime}
-- Travel mode preference: ${safeTravelMode}
-- Accommodation preference: ${safeAccommodation}
-- Start date: ${safeStartDate}
-- Language preference: ${safeLanguage}
+- From: ${from}
+- Destination: ${destination}
+- Number of days: ${formData.days}
+- Number of people: ${formData.people}
+- Budget (INR): ${formData.budget}
+- Themes: ${formData.themes.join(", ")}
+- Available time per day: ${formData.time}
+- Travel mode preference: ${formData.travelMode}
+- Accommodation preference: ${formData.accommodation}
+- Start date: ${formData.startDate}
+- Language preference: ${formData.language}
 
-Guidelines:
-1. Include a short "arrival_summary" only on Day 1 describing the journey from ${from} to ${destination}.
-2. All subsequent days focus entirely on ${destination}.
-3. Keep itinerary realistic and optimized for the user's preferences.
-4. All textual content should be in ${safeLanguage}.
-5. Only numeric/date fields remain in standard formats.
-6. Return ONLY the JSON object.
+Important:
+- The itinerary must start from "${from}" and reach "${destination}".
+- Include realistic transport details (flight, cab, train) between the origin and destination with estimated INR cost.
+- Ensure each day's itinerary mentions accommodation, transport if needed, and activities.
+- All textual fields (description, notes, warnings, accommodation name/location, theme_focus, day_of_week) must be written in ${
+				formData.language
+		  }.
+- Only numeric/date fields remain in English/standard formats.
+- Return ONLY a valid JSON object, no markdown, no explanations.
 `;
 
-	// Call AI
 	let response;
 	try {
 		response = await ai.models.generateContent({
@@ -228,7 +233,6 @@ Guidelines:
 
 	console.debug("AI raw response:", response);
 
-	// extract text safely
 	const text = extractText(response);
 	if (!text) {
 		// If extractText returned null but response is object, try to use it directly
@@ -250,44 +254,20 @@ Guidelines:
 		return parsed;
 	}
 
-	// Fallback if AI output invalid
+	// 🛑 Fallback in case of invalid JSON
 	return {
 		from,
 		destination,
-		start_date: safeStartDate,
-		number_of_days: Number(safeDays) || 0,
-		number_of_people: Number(safePeople) || 1,
-		budget_inr: Number(safeBudget) || null,
-		themes: safeThemes,
-		language_preference: safeLanguage,
-		travel_mode_preference: safeTravelMode,
-		accommodation_preference: safeAccommodation,
-		notes:
-			"Fallback itinerary – AI did not return valid JSON. Includes basic structure only.",
-		daily_itinerary: [
-			{
-				date: safeStartDate || "",
-				day_of_week: "Day 1",
-				theme_focus: safeThemes[0] || "",
-				arrival_summary: `Travel from ${from || "your city"} to ${
-					destination || "the destination"
-				}`,
-				accommodation: {
-					name: "TBD Hotel",
-					location: destination || "",
-					notes: "",
-				},
-				activities: [],
-				budget_estimate_usd: {
-					accommodation: 0,
-					food_drinks: 0,
-					shopping: 0,
-					nightlife: 0,
-					transport: 0,
-					miscellaneous: 0,
-				},
-			},
-		],
+		start_date: formData.startDate,
+		number_of_days: Number(formData.days),
+		number_of_people: Number(formData.people),
+		budget_inr: Number(formData.budget),
+		themes: formData.themes,
+		language_preference: formData.language,
+		travel_mode_preference: formData.travelMode,
+		accommodation_preference: formData.accommodation,
+		notes: "Fallback itinerary – AI did not return valid JSON.",
+		daily_itinerary: [],
 		warnings: ["AI response could not be parsed, fallback schema applied."],
 	};
 }

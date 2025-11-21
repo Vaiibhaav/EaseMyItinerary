@@ -56,68 +56,86 @@ const DemoReviews = () => {
 			},
 		];
     return (
-			<div>
-				<section className="w-full max-w-6xl mt-20 mb-20">
-					<h2 className="text-3xl font-bold text-center mt-10 mb-14 text-primary">
+		<div className="w-full bg-gradient-to-b from-blue-50 to-cyan-50 py-20">
+			<section className="w-full max-w-7xl mx-auto px-6">
+				<div className="text-center mb-16">
+					<h2 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
 						Traveller Experiences
 					</h2>
-					<div className="grid md:grid-cols-3 gap-10">
-						{demoReviews.map((r, idx) => (
-							<div
-								key={idx}
-								className="bg-card shadow-sm hover:shadow-lg rounded-2xl overflow-hidden border border-border transition-transform hover:-translate-y-1 flex flex-col"
-							>
-								{/* Itinerary image */}
+					<p className="text-gray-600 text-lg font-medium">
+						See what our amazing travelers have to say
+					</p>
+				</div>
+				<div className="grid md:grid-cols-3 gap-8">
+					{demoReviews.map((r, idx) => (
+						<div
+							key={idx}
+							className="bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl rounded-3xl overflow-hidden border-2 border-cyan-200/50 transition-all hover:-translate-y-2 hover:scale-105 flex flex-col group"
+						>
+							{/* Itinerary image with gradient overlay */}
+							<div className="relative overflow-hidden">
 								<img
 									src={r.itineraryImg}
 									alt={r.itinerary}
-									className="w-full h-40 object-cover"
+									className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
 								/>
+							<div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+							<div className="absolute bottom-3 left-3 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-1.5 rounded-full shadow-lg">
+								{r.itinerary}
+							</div>
+							</div>
 
-								<div className="p-6 flex-1 flex flex-col">
-									{/* User details */}
-									<div className="flex items-center gap-3 mb-4">
+							<div className="p-6 flex-1 flex flex-col">
+								{/* User details */}
+								<div className="flex items-center gap-3 mb-4">
+									<div className="relative">
 										<img
 											src={r.image}
 											alt={r.name}
-											className="w-12 h-12 rounded-full object-cover border-2 border-accent shadow-sm"
+											className="w-14 h-14 rounded-full object-cover border-3 shadow-md ring-2 ring-cyan-200"
 										/>
-										<div>
-											<h3 className="font-semibold text-lg text-foreground">
-												{r.name}
-											</h3>
-											<Stars count={r.rating} />
+										<div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full p-1">
+											<svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+												<path d="M9 12l-2-2-1.5 1.5L9 15l7-7-1.5-1.5L9 12z"/>
+											</svg>
 										</div>
 									</div>
-
-									{/* Review */}
-									<p className="text-muted-foreground text-sm italic leading-relaxed flex-1">
-										“{r.review}”
-									</p>
-
-									{/* Highlights */}
-									<div className="mt-4">
-										<h4 className="text-xs font-bold uppercase text-muted-foreground mb-1 tracking-wide">
-											Highlights
-										</h4>
-										<ul className="text-xs text-foreground list-disc list-inside space-y-1">
-											{r.highlights.map((h, i) => (
-												<li key={i}>{h}</li>
-											))}
-										</ul>
+									<div>
+										<h3 className="font-bold text-lg text-gray-800">
+											{r.name}
+										</h3>
+										<Stars count={r.rating} />
 									</div>
+								</div>
 
-									{/* Itinerary tag */}
-									<div className="mt-4 text-xs font-medium text-primary bg-accent/40 px-3 py-1 rounded-full w-fit">
-										{r.itinerary}
+								{/* Review */}
+								<p className="text-gray-600 text-sm leading-relaxed flex-1 mb-4">
+									"{r.review}"
+								</p>
+
+								{/* Highlights */}
+								<div className="mt-auto">
+									<h4 className="text-xs font-bold uppercase bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2 tracking-wide">
+										✨ Highlights
+									</h4>
+									<div className="flex flex-wrap gap-2">
+										{r.highlights.map((h, i) => (
+											<span 
+												key={i}
+												className="text-xs font-semibold text-cyan-700 bg-cyan-100 px-3 py-1 rounded-full border border-cyan-200"
+											>
+												{h}
+											</span>
+										))}
 									</div>
 								</div>
 							</div>
-						))}
-					</div>
-				</section>
-			</div>
-		);
+						</div>
+					))}
+				</div>
+			</section>
+		</div>
+	);
 }
 
 export default DemoReviews

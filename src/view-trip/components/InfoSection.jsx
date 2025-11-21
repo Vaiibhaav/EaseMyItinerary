@@ -10,7 +10,7 @@ function InfoSection({ trip }) {
 	}, [trip]);
 
 	const data = {
-		textQuery: trip?.userSelection?.destination?.label,
+		textQuery: trip?.userSelection?.destination?.label || trip.tripData?.destination,
 	};
 
 	const getPlaceImage = async () => {
@@ -29,41 +29,68 @@ function InfoSection({ trip }) {
 	};
 
 	return (
-		<div>
-			{/* Cover Image */}
-			<img
-				src={photoUrl || "/placeholder.jpg"}
-				className="h-[340px] w-full object-cover rounded-xl"
-				alt="Trip cover"
-			/>
-
-			{/* Trip details */}
-			<div className="flex justify-between items-start mt-6 mb-5">
-				<div className="flex flex-col gap-4">
-					<h2 className="font-bold text-3xl text-foreground">
-						{trip?.userSelection?.destination?.label}
+		<div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border-2 border-cyan-200/50 overflow-hidden">
+			{/* Cover Image with Gradient Overlay */}
+			<div className="relative">
+				<img
+					src={photoUrl || "/placeholder.jpg"}
+					className="h-[280px] w-full object-cover"
+					alt="Trip cover"
+				/>
+				<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+				
+				{/* Destination Title on Image */}
+				<div className="absolute bottom-4 left-4 right-4">
+					<h2 className="font-extrabold text-3xl md:text-4xl text-white drop-shadow-2xl">
+						{trip?.userSelection?.destination?.label || trip.tripData?.destination}
 					</h2>
+				</div>
+			</div>
 
-					<div className="flex flex-wrap gap-3">
-						<span className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-full text-sm text-foreground font-medium">
-							<Calendar className="w-4 h-4 text-primary" />
-							{trip?.userSelection?.days > 1
-								? `${trip?.userSelection?.days} Days Trip`
-								: `${trip?.userSelection?.days} Day Trip`}
-						</span>
-
-						<span className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-full text-sm text-foreground font-medium">
-							<Wallet className="w-4 h-4 text-primary" />
-							Budget: {trip?.userSelection?.budget} INR
-						</span>
-
-						<span className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-full text-sm text-foreground font-medium">
-							<Users className="w-4 h-4 text-primary" />
-							{trip?.userSelection?.people > 1
-								? `${trip?.userSelection?.people} People`
-								: `${trip?.userSelection?.people} Person`}
-						</span>
+			{/* Trip Details */}
+			<div className="p-5">
+				<div className="flex flex-wrap gap-3">
+					<div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 rounded-lg border border-blue-200">
+						<Calendar className="w-5 h-5 text-blue-600" />
+						<div>
+							<p className="text-xs text-blue-600 font-semibold">Duration</p>
+							<p className="text-blue-800 font-bold text-sm">
+								{trip?.userSelection?.days} {trip?.userSelection?.days > 1 ? 'Days' : 'Day'}
+							</p>
+						</div>
 					</div>
+
+					<div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 rounded-lg border border-green-200">
+						<Wallet className="w-5 h-5 text-green-600" />
+						<div>
+							<p className="text-xs text-green-600 font-semibold">Budget</p>
+							<p className="text-green-800 font-bold text-sm">
+								₹{parseInt(trip?.userSelection?.budget).toLocaleString('en-IN')}
+							</p>
+						</div>
+					</div>
+
+					<div className="flex items-center gap-2 px-4 py-2.5 bg-cyan-50 rounded-lg border border-cyan-200">
+						<Users className="w-5 h-5 text-cyan-600" />
+						<div>
+							<p className="text-xs text-cyan-600 font-semibold">Travelers</p>
+							<p className="text-cyan-800 font-bold text-sm">
+								{trip?.userSelection?.people} {trip?.userSelection?.people > 1 ? 'People' : 'Person'}
+							</p>
+						</div>
+					</div>
+
+					{/* Themes inline */}
+					{trip?.userSelection?.themes && trip.userSelection.themes.length > 0 && (
+						trip.userSelection.themes.slice(0, 3).map((theme, idx) => (
+							<span 
+								key={idx}
+								className="flex items-center text-xs font-semibold text-cyan-700 bg-cyan-50 px-3 py-2.5 rounded-lg border border-cyan-200"
+							>
+								{theme}
+							</span>
+						))
+					)}
 				</div>
 			</div>
 		</div>
