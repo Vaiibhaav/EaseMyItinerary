@@ -46,15 +46,15 @@ function ViewTrip() {
 			const existingTrip = trip.tripData || {};
 
 			const promptEnhancement = `
-The user wants to modify their travel itinerary with the following instruction:
-"${updateText}"
+				The user wants to modify their travel itinerary with the following instruction:
+				"${updateText}"
 
-Below is the existing itinerary JSON:
-${JSON.stringify(existingTrip, null, 2)}
+				Below is the existing itinerary JSON:
+				${JSON.stringify(existingTrip, null, 2)}
 
-Please update this itinerary accordingly. Maintain the same structure and valid JSON schema used before.
-Ensure all changes align with user's request. Do not rewrite the entire text, only adjust relevant parts (e.g., number of days, hotels, dinner spots, activities, etc.).
-`;
+				Please update this itinerary accordingly. Maintain the same structure and valid JSON schema used before.
+				Ensure all changes align with user's request. Do not rewrite the entire text, only adjust relevant parts (e.g., number of days, hotels, dinner spots, activities, etc.).
+				`;
 			debugger
 			console.log("promptEnhancement", promptEnhancement);
 			// Use same AI model logic
