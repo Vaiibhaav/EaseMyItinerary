@@ -168,8 +168,6 @@ The JSON must match this schema exactly:
       "budget_estimate_usd": {
         "accommodation": "number",
         "food_drinks": "number",
-        "shopping": "number",
-        "nightlife": "number",
         "transport": "number",
         "miscellaneous": "number"
       }
@@ -195,11 +193,14 @@ Important:
 - The itinerary must start from "${from}" and reach "${destination}".
 - Include realistic transport details (flight, cab, train) between the origin and destination with estimated INR cost.
 - Ensure each day's itinerary mentions accommodation, transport if needed, and activities.
-- All textual fields (description, notes, warnings, accommodation name/location, theme_focus, day_of_week) must be written in ${
-				formData.language
-		  }.
+- All textual fields (description, notes, warnings, accommodation name/location, theme_focus, day_of_week) must be written in ${formData.language}.
 - Only numeric/date fields remain in English/standard formats.
 - Return ONLY a valid JSON object, no markdown, no explanations.
+Additional strict rule:
+- All hotels, cafés, restaurants, attractions, and activity locations MUST have real, specific names.
+- Do NOT use generic placeholders like “budget hotel”, “local cafe”, “eat at a beachside restaurant”, “visit a famous temple”.
+- Every place mentioned must be an actual named establishment or location (e.g., “Taj Resort & Spa”, “Cafe 24”, “Trident Hotel”, “Baga Beach Shack – St. Anthony’s”).
+- If no real place is known, pick the closest realistic named place instead of using generic text.
 `;
 
 	let response;

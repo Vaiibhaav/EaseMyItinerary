@@ -13,7 +13,7 @@ function DaysInput({ value, onChange }) {
 				} else {
 					setError("Please enter a valid number");
 				}
-			}, 400),
+			}, 300),
 		[onChange]
 	);
 
@@ -25,23 +25,20 @@ function DaysInput({ value, onChange }) {
 
 	return (
 		<div className="flex flex-col gap-2">
-			{/* Label */}
 			<label className="text-lg font-semibold text-foreground">
 				Number of Days
 			</label>
 
-			{/* Input */}
 			<input
 				type="text"
 				placeholder="e.g. 5"
-				defaultValue={value}
+				value={value}
 				onChange={(e) => debouncedOnChange(e.target.value)}
 				className={`w-full rounded-lg px-3 py-2 bg-card text-foreground border shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition ${
 					error ? "border-red-500" : "border-border"
 				}`}
 			/>
 
-			{/* Error */}
 			{error && <p className="text-red-500 text-sm italic">{error}</p>}
 		</div>
 	);

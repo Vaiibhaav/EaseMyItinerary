@@ -10,13 +10,11 @@ function ExpensesBreakdown({ trip }) {
 	const totals = {
 		accommodation: 0,
 		food_drinks: 0,
-		shopping: 0,
-		nightlife: 0,
 		transport: 0,
 		miscellaneous: 0,
 	};
 
-	const exchangeRate = 83; // USD -> INR
+	const exchangeRate = 89; // USD -> INR
 
 	trip.tripData.daily_itinerary.forEach((day) => {
 		const budget = day.budget_estimate_usd || {};
