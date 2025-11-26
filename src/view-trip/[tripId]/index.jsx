@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../service/firebaseConfig";
 import InfoSection from "../components/InfoSection";
 import Hotels from "../components/Hotels";
+import Flights from "../components/Flights";
 import Activities from "../components/Activities";
 import Notes from "../components/Notes";
 import ExpensesBreakdown from "../components/ExpensesBreakdown";
@@ -55,7 +56,6 @@ ${JSON.stringify(existingTrip, null, 2)}
 Please update this itinerary accordingly. Maintain the same structure and valid JSON schema used before.
 Ensure all changes align with user's request. Do not rewrite the entire text, only adjust relevant parts (e.g., number of days, hotels, dinner spots, activities, etc.).
 `;
-			debugger
 			console.log("promptEnhancement", promptEnhancement);
 			// Use same AI model logic
 			const updatedTrip = await getItinerary({
@@ -95,36 +95,122 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 	const travelOptions = [];
 	const stayOptions = [];
 
-	itinerary.forEach((day) => {
-		if (day?.budget_estimate_usd?.transport) {
+	// Check if user selected flight mode
+	const travelMode = trip?.userSelection?.travelMode || trip?.tripData?.travel_mode_preference || "";
+	const isFlightMode = travelMode.toLowerCase().includes("flight") || 
+		travelMode.toLowerCase().includes("air") ||
+		travelMode.toLowerCase().includes("aeroplane") ||
+		travelMode.toLowerCase().includes("plane");
+
+	// Exchange rates
+	const exchangeRates = {
+		USD: 1,
+		INR: 83,
+		EUR: 0.92,
+		GBP: 0.79,
+		JPY: 150,
+	};
+
+	// Handle travel options
+	if (isFlightMode) {
+		// For flights: show total round trip price as single item
+		const flightOffer = trip?.tripData?.flightOffer;
+		if (flightOffer?.price) {
+			const flightPrice = parseFloat(flightOffer.price.total || 0);
+			const flightCurrency = flightOffer.price.currency || 'INR';
+			
+			// Convert to INR if needed
+			const flightPriceINR = flightCurrency === 'INR' 
+				? flightPrice 
+				: flightPrice * (exchangeRates[flightCurrency] || exchangeRates.INR);
+			
+			// Show as single round trip flight
+			const numItineraries = flightOffer.itineraries?.length || 0;
+			const flightName = numItineraries >= 2 ? "Round Trip Flight" : "Flight";
+			
 			travelOptions.push({
-				type: "Transport",
-				name: `${day.date} Transport`,
-				price: Math.round(day.budget_estimate_usd.transport * 85),
+				type: "Flight",
+				name: flightName,
+				price: Math.round(flightPriceINR),
+				date: flightOffer.itineraries?.[0]?.segments?.[0]?.departure?.at?.split('T')[0] || itinerary[0]?.date,
 			});
 		}
-		if (day?.accommodation?.name) {
+	} else {
+		// For non-flight modes: show transport from daily itinerary
+		itinerary.forEach((day) => {
+			if (day?.budget_estimate_usd?.transport) {
+				// Convert USD to INR
+				const transportPriceINR = Math.round(day.budget_estimate_usd.transport * exchangeRates.INR);
+				if (transportPriceINR > 0) {
+					travelOptions.push({
+						type: "Transport",
+						name: `${day.date} Transport`,
+						price: transportPriceINR,
+						date: day.date,
+					});
+				}
+			}
+		});
+	}
+
+	// Handle accommodation options
+	// Extract price per night from first day's accommodation notes
+	const firstDay = itinerary[0];
+	const firstDayNotes = firstDay?.accommodation?.notes || "";
+	const priceMatch = firstDayNotes.match(/(?:Price|price):\s*([$₹€£¥]|USD|INR|EUR|GBP|JPY)?\s*(\d+(?:[.,]\d+)?)\s*per\s*night/i) 
+		|| firstDayNotes.match(/(?:Price|price):\s*([$₹€£¥]|USD|INR|EUR|GBP|JPY)?\s*(\d+(?:[.,]\d+)?)/i);
+	
+	if (priceMatch && firstDay?.accommodation?.name) {
+		const pricePerNight = parseFloat(priceMatch[2].replace(/,/g, ''));
+		const currencySymbol = priceMatch[1] || null;
+		
+		// Currency map
+		const currencyMap = {
+			'$': 'USD',
+			'₹': 'INR',
+			'€': 'EUR',
+			'£': 'GBP',
+			'¥': 'JPY',
+		};
+		const currencyCode = currencySymbol && currencyMap[currencySymbol] 
+			? currencyMap[currencySymbol]
+			: (currencySymbol && ['USD', 'INR', 'EUR', 'GBP', 'JPY'].includes(currencySymbol.toUpperCase()) 
+				? currencySymbol.toUpperCase() 
+				: 'INR');
+		
+		// Convert to INR
+		const pricePerNightINR = currencyCode === 'INR' 
+			? pricePerNight 
+			: pricePerNight * (exchangeRates[currencyCode] || exchangeRates.INR);
+		
+		// Calculate total accommodation cost (price per night × number of days)
+		const numberOfDays = itinerary.length;
+		const totalAccommodationPrice = Math.round(pricePerNightINR * numberOfDays);
+		
+		stayOptions.push({
+			type: "Accommodation",
+			name: firstDay.accommodation.name,
+			price: totalAccommodationPrice,
+		});
+	} else {
+		// Fallback: use budget estimate if price not found in notes
+		let totalAccommodationUSD = 0;
+		itinerary.forEach((day) => {
+			if (day?.budget_estimate_usd?.accommodation) {
+				totalAccommodationUSD += day.budget_estimate_usd.accommodation;
+			}
+		});
+		if (totalAccommodationUSD > 0 && firstDay?.accommodation?.name) {
 			stayOptions.push({
 				type: "Accommodation",
-				name: day.accommodation.name,
-				price: Math.round(day.budget_estimate_usd.accommodation * 85 || 0),
+				name: firstDay.accommodation.name,
+				price: Math.round(totalAccommodationUSD * exchangeRates.INR),
 			});
 		}
-	});
+	}
 
-	const uniqueStayOptions = Object.values(
-		stayOptions.reduce((acc, item) => {
-			acc[item.name] = item;
-			return acc;
-		}, {})
-	);
-
-	const uniqueTravelOptions = Object.values(
-		travelOptions.reduce((acc, item) => {
-			acc[item.name] = item;
-			return acc;
-		}, {})
-	);
+	const uniqueStayOptions = stayOptions; // Already unique
+	const uniqueTravelOptions = travelOptions; // Already processed correctly
 
 	return (
 		<div className="min-h-screen w-full bg-gradient-to-b from-blue-50 to-cyan-50 py-12 px-6 mt-12">
@@ -141,7 +227,8 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 					{/* Main Content - Left Side */}
 					<div className="lg:col-span-2 space-y-6">
-						<Hotels trip={trip} />
+						<Flights trip={trip} />
+						<Hotels trip={trip} onHotelUpdated={getTripData} />
 						<Activities trip={trip} />
 						<Notes trip={trip} />
 					</div>

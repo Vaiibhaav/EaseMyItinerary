@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Plane, Bed, Car, ArrowLeft, CheckCircle2 } from "lucide-react";
@@ -9,7 +9,25 @@ const Booking = () => {
 	const navigate = useNavigate();
 	const tripData = location.state?.tripDetails;
 
+	// Auto-select all accommodation and transport options (required for booking)
 	const [selected, setSelected] = useState([]);
+
+	useEffect(() => {
+		if (tripData) {
+			const allOptions = [
+				...(tripData.travelOptions || []),
+				...(tripData.stayOptions || [])
+			];
+			const autoSelected = allOptions.map((item, idx) => ({
+				...item,
+				id: item.type?.toLowerCase().includes("transport") || item.type?.toLowerCase().includes("flight") || item.type?.toLowerCase().includes("cab")
+					? `travel-${idx}-${item.name}`
+					: `stay-${idx}-${item.name}`,
+				price: typeof item.price === "number" ? item.price : Number(String(item.price).replace(/[^0-9.]/g, "")) || 0,
+			}));
+			setSelected(autoSelected);
+		}
+	}, [tripData]);
 
 	if (!tripData)
 		return (
@@ -42,35 +60,27 @@ const Booking = () => {
 		return 0;
 	};
 
+	// Accommodation and transport are required and cannot be deselected
 	const handleSelect = (item) => {
-		setSelected((prev) => {
-			const exists = prev.find((i) => i.id === item.id);
-			if (exists) {
-				return prev.filter((i) => i.id !== item.id);
-			} else {
-				return [...prev, item];
-			}
-		});
+		// Do nothing - accommodation and transport are always selected
 	};
 
 	const total = selected.reduce((sum, i) => sum + normalizePrice(i.price), 0);
 
 	const getDescription = (item) => {
-		const dateText = item.date ? ` on ${item.date}` : "";
-		if (item.type?.toLowerCase().includes("flight")) {
-			return `${item.name} flight from ${item.from || "your city"} to ${
-				item.to || tripData.destination
-			}${dateText}`;
-		} else if (item.type?.toLowerCase().includes("cab")) {
-			return `${item.name || "Cab"} ride${dateText}`;
-		} else if (item.type?.toLowerCase().includes("hotel")) {
-			return `${item.name} hotel${dateText}`;
-		} else if (item.type?.toLowerCase().includes("hostel")) {
-			return `${item.name} hostel${dateText}`;
-		} else if (item.type?.toLowerCase().includes("transport")) {
-			return `${item.name || "Transport"}${dateText}`;
+		// For travel options, just show the name (e.g., "Round Trip Flight", "Transport")
+		if (item.type?.toLowerCase().includes("flight") || 
+			item.type?.toLowerCase().includes("cab") || 
+			item.type?.toLowerCase().includes("transport")) {
+			return item.name;
 		}
-		return `${item.name}${dateText}`;
+		// For accommodation, show the name
+		if (item.type?.toLowerCase().includes("hotel") || 
+			item.type?.toLowerCase().includes("accommodation") || 
+			item.type?.toLowerCase().includes("hostel")) {
+			return item.name;
+		}
+		return item.name;
 	};
 
 	const getIcon = (type = "") => {
@@ -127,7 +137,7 @@ const Booking = () => {
 						{tripData.destination}
 					</p>
 					<p className="text-sm text-gray-600 mt-2">
-						Select the services you'd like to book
+						Accommodation and transportation are included in your booking
 					</p>
 				</div>
 
@@ -149,11 +159,10 @@ const Booking = () => {
 									{travelOptions.map((item) => (
 										<div
 											key={item.id}
-											onClick={() => handleSelect(item)}
-											className={`group relative flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300 ${
+											className={`group relative flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${
 												isSelected(item)
 													? "bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-400 shadow-md"
-													: "bg-gray-50/50 border-2 border-gray-200 hover:border-blue-300 hover:shadow-md"
+													: "bg-gray-50/50 border-2 border-gray-200"
 											}`}
 										>
 											<div className="flex items-center gap-4 flex-1">
@@ -172,14 +181,8 @@ const Booking = () => {
 												<span className="text-lg font-bold text-gray-800">
 													₹{item.price.toLocaleString()}
 												</span>
-												<div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-													isSelected(item)
-														? "bg-blue-600 border-blue-600"
-														: "border-gray-300 group-hover:border-blue-400"
-												}`}>
-													{isSelected(item) && (
-														<CheckCircle2 className="w-5 h-5 text-white" fill="currentColor" />
-													)}
+												<div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-blue-600 border-blue-600">
+													<CheckCircle2 className="w-5 h-5 text-white" fill="currentColor" />
 												</div>
 											</div>
 										</div>
@@ -203,11 +206,10 @@ const Booking = () => {
 									{stayOptions.map((item) => (
 										<div
 											key={item.id}
-											onClick={() => handleSelect(item)}
-											className={`group relative flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300 ${
+											className={`group relative flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${
 												isSelected(item)
 													? "bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-400 shadow-md"
-													: "bg-gray-50/50 border-2 border-gray-200 hover:border-cyan-300 hover:shadow-md"
+													: "bg-gray-50/50 border-2 border-gray-200"
 											}`}
 										>
 											<div className="flex items-center gap-4 flex-1">
@@ -226,14 +228,8 @@ const Booking = () => {
 												<span className="text-lg font-bold text-gray-800">
 													₹{item.price.toLocaleString()}
 												</span>
-												<div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-													isSelected(item)
-														? "bg-cyan-600 border-cyan-600"
-														: "border-gray-300 group-hover:border-cyan-400"
-												}`}>
-													{isSelected(item) && (
-														<CheckCircle2 className="w-5 h-5 text-white" fill="currentColor" />
-													)}
+												<div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-cyan-600 border-cyan-600">
+													<CheckCircle2 className="w-5 h-5 text-white" fill="currentColor" />
 												</div>
 											</div>
 										</div>

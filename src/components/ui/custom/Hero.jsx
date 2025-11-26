@@ -9,6 +9,8 @@ import TimeInput from "../trip/inputs/TimeInput";
 import TravelModeInput from "../trip/inputs/TravelModeInput";
 import AccommodationInput from "../trip/inputs/AccommodationInput";
 import LanguageInput from "../trip/inputs/LanguageInput";
+import HotelRatingInput from "../trip/inputs/HotelRatingInput";
+import HotelAmenitiesInput from "../trip/inputs/HotelAmenitiesInput";
 import {
 	Dialog,
 	DialogContent,
@@ -44,6 +46,8 @@ const Hero = () => {
 		travelMode: "",
 		accommodation: "",
 		language: "",
+		hotelRating: "3", // Default to 3 stars
+		hotelAmenities: ["AIR_CONDITIONING"], // Default to AIR_CONDITIONING
 	});
 
 	const [errors, setErrors] = useState({});
@@ -453,6 +457,20 @@ const Hero = () => {
 								{errors.themes && (
 									<p className="text-red-600 text-sm font-semibold bg-red-50 px-3 py-1.5 rounded-lg mt-1">{errors.themes}</p>
 								)}
+							</div>
+
+							<div>
+								<HotelRatingInput
+									value={formData.hotelRating}
+									onChange={(v) => handleInputChange("hotelRating", v)}
+								/>
+							</div>
+
+							<div className="md:col-span-2">
+								<HotelAmenitiesInput
+									value={formData.hotelAmenities}
+									onChange={(v) => handleInputChange("hotelAmenities", v)}
+								/>
 							</div>
 						</div>
 					)}

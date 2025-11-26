@@ -11,6 +11,8 @@ import AccommodationInput from "@/components/ui/trip/inputs/AccommodationInput";
 import StartDateInput from "@/components/ui/trip/inputs/StartDateInput";
 import LanguageInput from "@/components/ui/trip/inputs/LanguageInput";
 import FromLocationInput from "@/components/ui/trip/inputs/FromLocationInput";
+import HotelRatingInput from "@/components/ui/trip/inputs/HotelRatingInput";
+import HotelAmenitiesInput from "@/components/ui/trip/inputs/HotelAmenitiesInput";
 import { Button } from "@/components/ui/button";
 import getItinerary from "@/service/AIModal";
 import {
@@ -41,6 +43,8 @@ function CreateTrip() {
 		accommodation: "",
 		startDate: "",
 		language: "",
+		hotelRating: "3", // Default to 3 stars
+		hotelAmenities: ["AIR_CONDITIONING"], // Default to AIR_CONDITIONING
 	});
 
 
@@ -90,6 +94,7 @@ function CreateTrip() {
 		if (!formData.startDate) newErrors.startDate = "Start date is required";
 		if (!formData.language)
 			newErrors.language = "Please select language preference";
+		// Hotel rating and amenities have defaults, so they're always valid
 
 		setErrors(newErrors);
 		return Object.keys(newErrors).length === 0;
@@ -285,6 +290,16 @@ function CreateTrip() {
 					{errors.language && (
 						<p className="text-red-500 text-sm">{errors.language}</p>
 					)}
+
+					<HotelRatingInput
+						value={formData.hotelRating}
+						onChange={(v) => handleInputChange("hotelRating", v)}
+					/>
+
+					<HotelAmenitiesInput
+						value={formData.hotelAmenities}
+						onChange={(v) => handleInputChange("hotelAmenities", v)}
+					/>
 				</div>
 
 				{/* CTA button */}
