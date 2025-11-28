@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router-dom";
 import React from "react";
+import { Toaster } from "sonner";
 import CreateTrip from "./create-trip/index.jsx";
 import Header from "./components/ui/custom/Header";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -79,6 +80,9 @@ createRoot(document.getElementById("root")).render(
 
 			{/* Footer always fixed at bottom */}
 			<Footer />
+			
+			{/* Toast notifications */}
+			<Toaster position="top-right" richColors />
 		</GoogleOAuthProvider>
 	</React.StrictMode>
 );

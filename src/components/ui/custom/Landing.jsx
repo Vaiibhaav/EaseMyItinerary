@@ -6,13 +6,13 @@ import { Link } from "react-router-dom";
 import Hero from "./Hero";
 import FlyingPlane from "./FlyingPlane";
 import HeritageShowcase from "./HeritageShowcase";
+import { Globe } from "@/components/ui/globe";
 
 function Landing() {
 	return (
 		<>
 			{/* Hero Section - Full Width */}
 			<Hero />
-
 			{/* Demo Reviews Section - Full Width */}
 			<div className="w-full relative z-10">
 				<DemoReviews />

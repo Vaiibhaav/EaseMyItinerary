@@ -271,3 +271,7 @@
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+.add-bottom-padding{
+  bottom:12px !important;
+}

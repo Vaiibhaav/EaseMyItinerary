@@ -7,8 +7,9 @@ import {
 } from "@/components/ui/popover";
 import { googleLogout, useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { toast } from "sonner";
 
-// ✅ Load special emails from .env (comma separated if more than one)
+// Load special emails from .env (comma separated if more than one)
 const SPECIAL_EMAIL = import.meta.env.VITE_SPECIAL_USER || "";
 
 function Header() {
@@ -67,7 +68,7 @@ function Header() {
 			})
 			.catch((err) => {
 				console.error("Error fetching user profile:", err);
-				alert("Failed to fetch Google profile. Check console.");
+				toast.error("Failed to fetch Google profile. Check console.");
 			});
 	};
 

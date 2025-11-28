@@ -1,11 +1,16 @@
 // src/service/RazorPay/PaymentButton.jsx
 import React from "react";
 import axios from "axios";
+import { toast } from "sonner";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export default function PaymentButton({
 	amountInRupees,
 	tripSummary,
+	tripId,
 	onPaymentSuccess,
+	onEmailSending,
 }) {
 	const BACKEND_URL =
     import.meta.env.VITE_API_URL ||
@@ -29,13 +34,13 @@ export default function PaymentButton({
 
 	const handlePay = async () => {
 		if (!amountInRupees || amountInRupees <= 0) {
-			alert("Please select at least one option before paying!");
+			toast.error("Please select at least one option before paying!");
 			return;
 		}
 
 		const res = await loadRazorpay();
 		if (!res) {
-			alert("Failed to load Razorpay SDK. Check your internet connection.");
+			toast.error("Failed to load Razorpay SDK. Check your internet connection.");
 			return;
 		}
 
@@ -50,9 +55,10 @@ export default function PaymentButton({
 					currency: "INR",
 				}
 			);
+			const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 			const options = {
-				key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+				key: razorpayKeyId,
 				amount: order.amount,
 				currency: order.currency,
 				name: "EaseMyItinerary",
@@ -60,51 +66,84 @@ export default function PaymentButton({
 				order_id: order.id,
 				handler: async function (response) {
 					try {
-						console.log("✅ payment confirmation...");
+						console.log("Payment confirmed.", response);
 
 						const user = JSON.parse(localStorage.getItem("user"));
 						const userEmail = user?.email || "vaibhavsaxena533@gmail.com";
+
+						// Store transaction ID and booking status in Firestore
+						if (tripId) {
+							try {
+								const tripRef = doc(db, "AiTrips", tripId);
+								await updateDoc(tripRef, {
+									isBookingDone: true,
+									transactionID: response.razorpay_payment_id || response.payment_id || response.id,
+									bookingDate: new Date().toISOString(),
+									bookingAmount: amountInRupees,
+								});
+								console.log("Booking status saved to Firestore");
+							} catch (firestoreErr) {
+								console.error(" Error saving booking status:", firestoreErr);
+								// Don't fail the payment flow if Firestore update fails
+							}
+						}
+
+						// Show toast that booking is done
+						toast.success("Booking confirmed successfully!");
+
+						// Show full-page loader while sending email
+						if (onEmailSending) {
+							onEmailSending(true);
+						}
 
 						// Check trip summary presence
 						if (!tripSummary || !tripSummary.destination) {
 							console.warn("⚠️ Missing trip summary, using fallback.");
 						}
 
-						// Call email API
-						const emailRes = await axios.post(
-              			`${BACKEND_URL}/send-booking-receipt`,
-              {
-                email: userEmail,
-                summary: tripSummary || {
-                  destination: "Unknown Destination",
-                  total: amountInRupees,
-                  selected: [],
-                },
-              }
-            );
+						try {
+							const emailRes = await axios.post(
+								`${BACKEND_URL}/send-booking-receipt`, {
+									email: userEmail,
+									summary: tripSummary || {
+										destination: "Unknown Destination",
+										total: amountInRupees,
+										selected: [],
+									},
+								}
+							);
 
-						if (emailRes.data?.success) {
-							alert("✅ Payment confirmed and booking email sent!");
-						} else {
-							alert("⚠️ payment done, but email may not have sent.");
+							// Hide loader
+							if (onEmailSending) {
+								onEmailSending(false);
+							}
+
+							if (emailRes.data?.success) {
+								toast.success("Booking receipt has been sent to your email.");
+							} else {
+								toast.info("Booking confirmed. Email receipt could not be sent.");
+							}
+						} catch (emailErr) {
+							// Hide loader
+							if (onEmailSending) {
+								onEmailSending(false);
+							}
+							toast.info("Booking confirmed. Email receipt could not be sent.");
 						}
 
 						if (onPaymentSuccess) {
 							setTimeout(onPaymentSuccess, 500);
 						}
 					} catch (err) {
-						console.error("❌ Mock payment flow error:", err);
-						alert(
-							`Error in mocked payment flow: ${
-								err.response?.data?.error || err.message
-							}`
-						);
+						console.error("Payment handler error:", err);
+						// Hide loader in case of error
+						if (onEmailSending) {
+							onEmailSending(false);
+						}
+						if (onPaymentSuccess) {
+							setTimeout(onPaymentSuccess, 500);
+						}
 					}
-				},
-				prefill: {
-					name: "Vaibhav Saxena",
-					email: "vaibhav@example.com",
-					contact: "9999999999",
 				},
 				theme: { color: "#1a73e8" },
 			};
@@ -113,12 +152,12 @@ export default function PaymentButton({
 			rzp.open();
 
 			rzp.on("payment.failed", function (response) {
-				console.error("❌ Payment failed:", response.error);
-				alert("Payment failed. Please try again.");
+				console.error(" Payment failed:", response.error);
+				toast.error("Payment failed. Please try again.");
 			});
 		} catch (err) {
-			console.error("❌ Payment Error:", err);
-			alert("Payment initiation failed. Please try again.");
+			console.error(" Payment Error:", err);
+			toast.error("Payment initiation failed. Please try again.");
 		}
 	};
 

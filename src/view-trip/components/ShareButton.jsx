@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "sonner";
 
 function ShareButton({ tripId, destination }) {
 	const handleShare = () => {
@@ -15,7 +16,7 @@ function ShareButton({ tripId, destination }) {
 				.catch((err) => console.error("Error sharing trip:", err));
 		} else {
 			navigator.clipboard.writeText(shareUrl);
-			alert("Link copied to clipboard!");
+			toast.success("Link copied to clipboard!");
 		}
 	};
 

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { GetPlaceDetails, PHOTO_REF_URL } from "../../service/GlobalApi";
+import { SpinnerImage } from "@/components/ui/spinner";
 
 function ActivitiesCard({ activity }) {
 	const [photoUrl, setPhotoUrl] = useState(null);
+	const [imageLoading, setImageLoading] = useState(true);
 
 	useEffect(() => {
 		if (activity?.location) {
@@ -12,6 +14,7 @@ function ActivitiesCard({ activity }) {
 	}, [activity]);
 
 	const getActivityImage = async () => {
+		setImageLoading(true);
 		try {
 			const data = { textQuery: activity?.location };
 			const res = await GetPlaceDetails(data);
@@ -23,6 +26,8 @@ function ActivitiesCard({ activity }) {
 			}
 		} catch (err) {
 			console.error("Error fetching activity image:", err);
+		} finally {
+			setImageLoading(false);
 		}
 	};
 
@@ -36,10 +41,13 @@ function ActivitiesCard({ activity }) {
 			<div className="rounded-xl bg-gradient-to-br from-white to-cyan-50 shadow-md hover:shadow-lg border border-cyan-200/50 transition-all hover:-translate-y-1 overflow-hidden cursor-pointer flex flex-col flex-1 group">
 				{/* Image with Overlay */}
 				<div className="relative overflow-hidden">
+					{imageLoading && <SpinnerImage />}
 					<img
 						src={photoUrl || "/placeholder.jpg"}
 						alt={activity?.description}
 						className="w-full h-28 object-cover group-hover:scale-110 transition-transform duration-500"
+						onLoad={() => setImageLoading(false)}
+						onError={() => setImageLoading(false)}
 					/>
 					<div className="absolute inset-0 bg-gradient-to-t from-blue-900/40 to-transparent"></div>
 					

@@ -78,7 +78,6 @@ function Hotels({ trip, onHotelUpdated }) {
 	if (itinerary.length === 0) {
 		return null;
 	}
-	debugger
 	const hasAvailableHotels = trip?.tripData?.availableHotels?.hotels?.length > 0;
 
 	const handleHotelUpdated = async () => {
@@ -97,8 +96,8 @@ function Hotels({ trip, onHotelUpdated }) {
 				<div className="flex-grow border-t-2 border-cyan-200"></div>
 			</div>
 
-			{/* Hotel Selection Option */}
-			{hasAvailableHotels && (
+			{/* Hotel Selection Option - Only show if booking is not done */}
+			{hasAvailableHotels && !trip?.isBookingDone && (
 				<div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
 					<p className="text-sm text-gray-700">
 						<span className="font-medium">Not happy with the current hotel?</span>{" "}

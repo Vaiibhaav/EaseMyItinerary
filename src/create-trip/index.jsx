@@ -5,12 +5,14 @@ import DaysInput from "@/components/ui/trip/inputs/DaysInput";
 import PeopleInput from "@/components/ui/trip/inputs/PeopleInput";
 import BudgetInput from "@/components/ui/trip/inputs/BudgetInput";
 import ThemesInput from "@/components/ui/trip/inputs/ThemesInput";
-import TimeInput from "@/components/ui/trip/inputs/TimeInput";
 import TravelModeInput from "@/components/ui/trip/inputs/TravelModeInput";
 import AccommodationInput from "@/components/ui/trip/inputs/AccommodationInput";
 import StartDateInput from "@/components/ui/trip/inputs/StartDateInput";
 import LanguageInput from "@/components/ui/trip/inputs/LanguageInput";
 import FromLocationInput from "@/components/ui/trip/inputs/FromLocationInput";
+import TimeInput from "@/components/ui/trip/inputs/TimeInput";
+import { Globe } from "@/components/ui/globe";
+
 import HotelRatingInput from "@/components/ui/trip/inputs/HotelRatingInput";
 import HotelAmenitiesInput from "@/components/ui/trip/inputs/HotelAmenitiesInput";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,9 @@ import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { setDoc, doc } from "firebase/firestore";
 import { db } from "@/service/firebaseConfig";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { SpinnerOverlay } from "@/components/ui/spinner";
 
 const apiKey = import.meta.env.VITE_GOOGLE_PLACE_API_KEY;
 
@@ -38,7 +42,7 @@ function CreateTrip() {
 		people: "",
 		budget: "",
 		themes: [],
-		time: "",
+		time: "", // restored global time
 		travelMode: "",
 		accommodation: "",
 		startDate: "",
@@ -46,7 +50,6 @@ function CreateTrip() {
 		hotelRating: "3", // Default to 3 stars
 		hotelAmenities: ["AIR_CONDITIONING"], // Default to AIR_CONDITIONING
 	});
-
 
 	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
@@ -86,7 +89,10 @@ function CreateTrip() {
 			newErrors.budget = "Please enter a valid budget";
 		if (!formData.themes || formData.themes.length === 0)
 			newErrors.themes = "Select at least one theme";
+
+		// restore global time validation
 		if (!formData.time) newErrors.time = "Please select available time";
+
 		if (!formData.travelMode)
 			newErrors.travelMode = "Please select travel mode";
 		if (!formData.accommodation)
@@ -102,7 +108,6 @@ function CreateTrip() {
 
 	const login = useGoogleLogin({
 		onSuccess: (tokenResponse) => {
-			console.log("Token Response:", tokenResponse);
 			getUserProfile(tokenResponse);
 		},
 		onError: (error) => console.error("Login Failed:", error),
@@ -114,20 +119,16 @@ function CreateTrip() {
 			setOpenDialog(true);
 			return;
 		}
-		if (!validateForm()) {
-			console.log("Validation failed:", errors);
-			return;
-		}
+		if (!validateForm()) return;
 
 		setLoading(true);
 		try {
 			const result = await getItinerary(formData);
 			if (!result) throw new Error("No itinerary returned from AI");
-
 			await saveAiTrip(result);
 		} catch (err) {
 			console.error("Error generating itinerary:", err);
-			alert("Failed to generate itinerary. Try again in a few minutes.");
+			toast.error("Failed to generate itinerary. Try again in a few minutes.");
 		} finally {
 			setLoading(false);
 		}
@@ -140,16 +141,6 @@ function CreateTrip() {
 			const user = rawUser ? JSON.parse(rawUser) : null;
 
 			let tripObj = TripData;
-			if (typeof TripData === "string") {
-				try {
-					tripObj = JSON.parse(TripData);
-				} catch {
-					tripObj = { raw: TripData };
-				}
-			}
-			if (tripObj === null || typeof tripObj !== "object") {
-				tripObj = { raw: String(tripObj) };
-			}
 
 			await setDoc(doc(db, "AiTrips", docId), {
 				userSelection: formData,
@@ -162,7 +153,7 @@ function CreateTrip() {
 			navigate(`/view-trip/${docId}`);
 		} catch (err) {
 			console.error("Error saving AI trip:", err);
-			alert("Failed to save itinerary.");
+			toast.error("Failed to save itinerary.");
 			throw err;
 		}
 	};
@@ -183,9 +174,8 @@ function CreateTrip() {
 				setOpenDialog(false);
 				onGenerateTrips();
 			})
-			.catch((err) => {
-				console.error("Error fetching user profile:", err);
-				alert("Failed to fetch Google profile.");
+			.catch(() => {
+				toast.error("Failed to fetch Google profile.");
 			});
 	};
 
@@ -196,7 +186,6 @@ function CreateTrip() {
 	return (
 		<div className="flex justify-center mt-10 px-5">
 			<div className="w-full max-w-2xl bg-card rounded-xl shadow-md p-8">
-				{/* Heading */}
 				<h2 className="font-bold text-3xl text-center text-foreground">
 					Customize Your Trip
 				</h2>
@@ -204,8 +193,6 @@ function CreateTrip() {
 					Fill in your details and let our AI create a personalized itinerary
 				</p>
 
-				{/* Form inputs */}
-				{/* From Location */}
 				<FromLocationInput
 					value={formData.from}
 					onChange={(v) => handleInputChange("from", v)}
@@ -253,6 +240,7 @@ function CreateTrip() {
 						<p className="text-red-500 text-sm">{errors.themes}</p>
 					)}
 
+					{/* restored global time input */}
 					<TimeInput
 						value={formData.time}
 						onChange={(v) => handleInputChange("time", v)}
@@ -279,6 +267,7 @@ function CreateTrip() {
 						value={formData.startDate}
 						onChange={(v) => handleInputChange("startDate", v)}
 					/>
+					<h2>Pulkit Randua</h2>
 					{errors.startDate && (
 						<p className="text-red-500 text-sm">{errors.startDate}</p>
 					)}
@@ -302,43 +291,21 @@ function CreateTrip() {
 					/>
 				</div>
 
-				{/* CTA button */}
 				<div className="my-8 flex justify-center">
 					<Button
 						onClick={onGenerateTrips}
 						disabled={loading}
-						className="px-8 py-3 text-lg rounded-full bg-[#E67E22] hover:bg-[#D35400] text-white"
+						className="px-6 py-2.5 text-base rounded-full bg-[#E67E22] hover:bg-[#D35400] text-white"
 					>
 						{loading ? "Generating..." : "Generate My Itinerary"}
 					</Button>
 				</div>
-
-				{/* Sign-in dialog */}
-				<Dialog open={openDialog}>
-					<DialogContent className="bg-card shadow-lg rounded-xl">
-						<DialogHeader>
-							<DialogDescription className="text-center">
-								<img
-									src="/logo.svg"
-									alt="logo"
-									className="w-16 h-16 mx-auto mb-4"
-								/>
-								<h2 className="font-bold text-xl mt-4">Sign in</h2>
-								<p className="text-muted-foreground mb-6">
-									Sign in with Google authentication securely
-								</p>
-								<Button
-									onClick={login}
-									className="w-full flex gap-3 items-center justify-center rounded-full"
-								>
-									<FcGoogle className="h-6 w-6" />
-									Continue with Google
-								</Button>
-							</DialogDescription>
-						</DialogHeader>
-					</DialogContent>
-				</Dialog>
 			</div>
+			<div className="relative w-full h-[300px] my-4">
+				<Globe />
+			</div>
+			
+			{loading && <SpinnerOverlay message="Generating your perfect itinerary..." />}
 		</div>
 	);
 }

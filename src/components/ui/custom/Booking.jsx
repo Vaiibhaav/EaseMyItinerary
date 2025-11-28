@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Plane, Bed, Car, ArrowLeft, CheckCircle2 } from "lucide-react";
 import PaymentButton from "@/service/RazorPay/PaymentButton.jsx";
+import { SpinnerOverlay } from "@/components/ui/spinner";
 
 const Booking = () => {
 	const location = useLocation();
@@ -11,6 +12,7 @@ const Booking = () => {
 
 	// Auto-select all accommodation and transport options (required for booking)
 	const [selected, setSelected] = useState([]);
+	const [sendingEmail, setSendingEmail] = useState(false);
 
 	useEffect(() => {
 		if (tripData) {
@@ -111,6 +113,7 @@ const Booking = () => {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-blue-50 via-cyan-50 to-blue-50 py-12 px-6 relative overflow-hidden">
+			{sendingEmail && <SpinnerOverlay message="Sending booking receipt..." />}
 			{/* Animated Background Shapes */}
 			<div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
 				<div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
@@ -283,13 +286,15 @@ const Booking = () => {
 							{/* Payment Button */}
 							<PaymentButton
 								amountInRupees={total}
+								tripId={location.state.tripId}
 								tripSummary={{
 									destination: tripData.destination,
 									total,
 									selected,
 								}}
+								onEmailSending={setSendingEmail}
 								onPaymentSuccess={() => {
-									console.log("✅ Payment success callback triggered");
+									console.log("Payment success callback triggered");
 									navigate(`/view-trip/${location.state.tripId}`, {
 										state: { paid: true },
 									});

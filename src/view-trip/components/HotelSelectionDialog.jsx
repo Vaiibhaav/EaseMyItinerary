@@ -4,6 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../service/firebaseConfig";
 import HotelCard from "./HotelCard";
+import { SpinnerOverlay, SpinnerInline } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GOOGLE_GEMINI_AI_API_KEY;
 const ai = new GoogleGenAI({
@@ -213,7 +215,7 @@ Return ONLY a valid JSON object matching the original schema, no markdown, no ex
 					updatedAt: new Date().toISOString(),
 				});
 
-				alert("✅ Hotel updated successfully! The itinerary has been regenerated with your selected hotel.");
+				toast.success("Hotel updated successfully! The itinerary has been regenerated with your selected hotel.");
 				onHotelSelected();
 				onClose();
 			} else {
@@ -221,7 +223,7 @@ Return ONLY a valid JSON object matching the original schema, no markdown, no ex
 			}
 		} catch (error) {
 			console.error("Error regenerating itinerary:", error);
-			alert("❌ Failed to update hotel. Please try again.");
+			toast.error("Failed to update hotel. Please try again.");
 		} finally {
 			setRegenerating(false);
 		}
@@ -259,7 +261,7 @@ Return ONLY a valid JSON object matching the original schema, no markdown, no ex
 				<div className="flex-1 overflow-y-auto p-6">
 					{fetchingDetails ? (
 						<div className="flex items-center justify-center py-12">
-							<Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+							<SpinnerInline size="lg" className="text-blue-600" />
 							<span className="ml-3 text-gray-600">Fetching hotel details...</span>
 						</div>
 					) : hotels.length === 0 ? (
@@ -367,7 +369,7 @@ Return ONLY a valid JSON object matching the original schema, no markdown, no ex
 						>
 							{regenerating ? (
 								<span className="flex items-center gap-2">
-									<Loader2 className="w-4 h-4 animate-spin" />
+									<SpinnerInline size="sm" />
 									Updating Itinerary...
 								</span>
 							) : (
@@ -377,6 +379,8 @@ Return ONLY a valid JSON object matching the original schema, no markdown, no ex
 					</div>
 				</div>
 			</div>
+			
+			{regenerating && <SpinnerOverlay message="Updating itinerary with selected hotel..." />}
 		</div>
 	);
 }

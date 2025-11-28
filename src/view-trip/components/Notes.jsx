@@ -1,5 +1,5 @@
 import React from "react";
-import { StickyNote } from "lucide-react"; // ✅ modern icon
+import { StickyNote } from "lucide-react"; // modern icon
 
 function Notes({ trip }) {
 	const notes = trip?.tripData?.notes;

@@ -138,7 +138,7 @@ User: "${userMessage}"
 			console.error(err);
 			setMessages([
 				...newMessages,
-				{ role: "assistant", content: "❌ " + err.message },
+				{ role: "assistant", content: " " + err.message },
 			]);
 		}
 		setLoading(false);

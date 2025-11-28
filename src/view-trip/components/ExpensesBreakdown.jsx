@@ -14,12 +14,22 @@ function ExpensesBreakdown({ trip }) {
 		miscellaneous: 0,
 	};
 
-	const exchangeRate = 83; // USD -> INR
+	// Exchange rates (must match the ones used in booking)
+	const exchangeRates = {
+		USD: 1,
+		INR: 83,
+		EUR: 0.92,
+		GBP: 0.79,
+		JPY: 150,
+	};
+	const exchangeRate = exchangeRates.INR; // USD -> INR
 
 	// Extract accommodation price per night from first day
 	const firstDay = trip.tripData.daily_itinerary[0];
 	const firstDayNotes = firstDay?.accommodation?.notes || "";
-	const priceMatch = firstDayNotes.match(/(?:Price|price):\s*([$₹€£¥]|USD|INR|EUR|GBP|JPY)?\s*(\d+(?:[.,]\d+)?)/i);
+	// Try to match "per night" pattern first, then fallback to general price pattern
+	const priceMatch = firstDayNotes.match(/(?:Price|price):\s*([$₹€£¥]|USD|INR|EUR|GBP|JPY)?\s*(\d+(?:[.,]\d+)?)\s*per\s*night/i) 
+		|| firstDayNotes.match(/(?:Price|price):\s*([$₹€£¥]|USD|INR|EUR|GBP|JPY)?\s*(\d+(?:[.,]\d+)?)/i);
 	const pricePerNight = priceMatch ? parseFloat(priceMatch[2].replace(/,/g, '')) : null;
 	const currencySymbol = priceMatch?.[1] || null;
 	
@@ -36,25 +46,18 @@ function ExpensesBreakdown({ trip }) {
 		: (currencySymbol && ['USD', 'INR', 'EUR', 'GBP', 'JPY'].includes(currencySymbol.toUpperCase()) 
 			? currencySymbol.toUpperCase() 
 			: 'INR'); // Default to INR
-	
-	// Exchange rates
-	const exchangeRates = {
-		USD: 1,
-		INR: 83,
-		EUR: 0.92,
-		GBP: 0.79,
-		JPY: 150,
-	};
 
 	// Calculate accommodation total: price per night × number of days
 	const numberOfDays = trip.tripData.daily_itinerary.length;
 	
 	if (pricePerNight) {
 		// Convert price per night to USD, then multiply by days to get total
-		const pricePerNightUSD = pricePerNight / (exchangeRates[currencyCode] || 83);
+		// This matches the booking calculation: pricePerNightINR * numberOfDays
+		const pricePerNightUSD = pricePerNight / (exchangeRates[currencyCode] || exchangeRates.INR);
 		totals.accommodation = pricePerNightUSD * numberOfDays;
 	} else {
 		// Fallback: sum from daily itinerary (if price not found in notes)
+		// But this should rarely happen if price is properly stored
 		trip.tripData.daily_itinerary.forEach((day) => {
 			const budget = day.budget_estimate_usd || {};
 			totals.accommodation += Number(budget.accommodation || 0);
@@ -76,8 +79,10 @@ function ExpensesBreakdown({ trip }) {
 		const flightCurrency = flightOffer.price.currency || 'INR';
 		
 		// Convert flight price to USD - this is the ONLY transport cost for flights
+		// Use the exact same conversion logic as booking page
 		flightPriceUSD = flightPrice / (exchangeRates[flightCurrency] || exchangeRates.INR);
-		totals.transport += flightPriceUSD;
+		// Set transport to ONLY the flight price (don't add, just set it)
+		totals.transport = flightPriceUSD;
 	}
 
 	// Calculate other categories (sum across all days)
@@ -87,7 +92,8 @@ function ExpensesBreakdown({ trip }) {
 		// For flight mode: ONLY flight price goes to transport, ALL other transport costs go to miscellaneous
 		// For non-flight mode: transport costs go to transport category
 		if (isFlightMode) {
-			// Flight mode: transport is ONLY the flight price (already added above)
+			// Flight mode: transport is ONLY the flight price (already set above)
+			// Do NOT add any transport from daily budget to transport category
 			// Move ALL transport costs from daily budget to miscellaneous
 			totals.food_drinks += Number(budget.food_drinks || 0);
 			totals.miscellaneous += Number(budget.miscellaneous || 0);

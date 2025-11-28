@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { findCheapestHotel, searchFlightOffers, getAirlineNames, getCheckInUrl } from "./AmadeusApi";
+import { GetPlaceDetails } from "./GlobalApi";
 
 // INIT
 const ai = new GoogleGenAI({
@@ -110,6 +111,72 @@ function normalizeItinerary(raw) {
 }
 
 // -----------------------------
+// Location Verification Functions
+// -----------------------------
+
+function sanitizePlaceQuery(q) {
+	if (!q || typeof q !== "string") return q;
+	// remove parenthetical codes like (BOM), excessive punctuation
+	let s = q.replace(/\(.*?\)/g, "");
+	// collapse multiple spaces and trim
+	s = s.replace(/\s+/g, " ").trim();
+	// remove control characters
+	s = s.replace(/[\u0000-\u001F\u007F]/g, "");
+	// cut overly long queries (Places TextSearch has length limits); keep 200 chars
+	if (s.length > 200) s = s.slice(0, 200);
+	return s;
+}
+
+async function verifyOrCorrectLocation(rawLoc) {
+	if (!rawLoc || rawLoc.length < 3) return rawLoc;
+	try {
+		const query = sanitizePlaceQuery(rawLoc);
+		const res = await GetPlaceDetails({ textQuery: query });
+		const place = res?.data?.places?.[0];
+		if (!place) return rawLoc; // fallback safely
+		
+		// Prefer displayName.text if available, else place.name
+		const name = place.displayName?.text || place.name || "";
+		// Use formattedAddress (valid field in Places API)
+		const address = place.formattedAddress || "";
+		const final = [name, address].filter(Boolean).join(", ").trim();
+		
+		// Return verified location if we have a valid address or location, otherwise return original
+		if (final && (address || place.location)) {
+			return final;
+		}
+		return rawLoc;
+	} catch (err) {
+		// Log but do not throw — keep non-breaking
+		console.warn(
+			"verifyOrCorrectLocation failed for",
+			rawLoc,
+			err?.message || err
+		);
+		return rawLoc;
+	}
+}
+
+async function enhanceItineraryLocations(itinerary) {
+	if (!itinerary?.daily_itinerary) return itinerary;
+	for (const day of itinerary.daily_itinerary) {
+		if (day.accommodation?.location) {
+			day.accommodation.location = await verifyOrCorrectLocation(
+				day.accommodation.location
+			);
+		}
+		if (Array.isArray(day.activities)) {
+			for (const act of day.activities) {
+				if (act.location) {
+					act.location = await verifyOrCorrectLocation(act.location);
+				}
+			}
+		}
+	}
+	return itinerary;
+}
+
+// -----------------------------
 // Main Function
 // -----------------------------
 
@@ -173,10 +240,10 @@ export default async function getItinerary(formData) {
 				hotelApiError = "No hotels found from Amadeus API";
 				console.warn("⚠️ No hotels found from Amadeus API, will use web search");
 			} else {
-				console.log(`✅ Found ${hotelData.hotels.length} hotels via Amadeus`);
+				console.log(`Found ${hotelData.hotels.length} hotels via Amadeus`);
 			}
 		} catch (error) {
-			console.error("❌ Error fetching hotels from Amadeus:", error);
+			console.error(" Error fetching hotels from Amadeus:", error);
 			hotelApiError = `Amadeus API error: ${error.message}`;
 			console.warn("⚠️ Hotel API failed, will use web search");
 		}
@@ -209,10 +276,10 @@ export default async function getItinerary(formData) {
 				flightApiError = "No flights found from Amadeus API";
 				console.warn("⚠️ No flights found from Amadeus API, will use web search");
 			} else {
-				console.log(`✅ Found ${flightOffers.data.length} flight offers via Amadeus`);
+				console.log(`Found ${flightOffers.data.length} flight offers via Amadeus`);
 			}
 		} catch (error) {
-			console.error("❌ Error fetching flights from Amadeus:", error);
+			console.error(" Error fetching flights from Amadeus:", error);
 			flightApiError = `Amadeus API error: ${error.message}`;
 			console.warn("⚠️ Flight API failed, will use web search");
 		}
@@ -605,7 +672,7 @@ Important:
 				checkOut: hotelData.checkOut,
 				cityCode: hotelData.cityCode,
 			};
-			console.log("✅ Hotel list saved for hotel selection feature");
+			console.log("Hotel list saved for hotel selection feature");
 		}
 
 		// ✈️ Fetch and save airline names and check-in URLs if flightOffer exists
@@ -650,15 +717,25 @@ Important:
 						airlineNames: airlineNames,
 						checkInUrls: checkInUrls,
 					};
-					console.log("✅ Airline data saved in flightOffer");
+					console.log("Airline data saved in flightOffer");
 				}
 			} catch (error) {
-				console.error("❌ Error fetching airline data:", error);
+				console.error(" Error fetching airline data:", error);
 				// Don't throw - continue without airline data
 			}
 		}
 		
-		return normalized;
+		// 🗺️ Enhance locations with Google Places verification for better routing
+		try {
+			console.log("🔍 Verifying and enhancing locations for routing...");
+			const enhanced = await enhanceItineraryLocations(normalized);
+			console.log("Locations enhanced successfully");
+			return enhanced;
+		} catch (err) {
+			console.warn("⚠️ Location enhancement failed, using original locations:", err);
+			// Return original if enhancement fails (non-breaking)
+			return normalized;
+		}
 	}
 
 	// 🛑 Fallback in case of invalid JSON

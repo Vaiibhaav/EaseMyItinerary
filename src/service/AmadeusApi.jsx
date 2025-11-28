@@ -396,7 +396,7 @@ export async function searchFlightOffers({
 		}
 		const destinationLocationCode = destinationCityData.iataCode;
 
-		console.log(`✅ City codes found - Origin: ${originLocationCode}, Destination: ${destinationLocationCode}`);
+		console.log(`City codes found - Origin: ${originLocationCode}, Destination: ${destinationLocationCode}`);
 
 		// Step 3: Determine currency based on origin country
 		const currency = getCurrencyFromCountryCode(originCountryCode);
@@ -427,11 +427,11 @@ export async function searchFlightOffers({
 			}
 		);
 
-		console.log("✅ Flight offers response:", JSON.stringify(response.data, null, 2));
+		console.log("Flight offers response:", JSON.stringify(response.data, null, 2));
 		
 		return response.data;
 	} catch (error) {
-		console.error("❌ Error searching flight offers:", error.response?.data || error.message);
+		console.error(" Error searching flight offers:", error.response?.data || error.message);
 		throw error;
 	}
 }

@@ -37,6 +37,11 @@ function MyTrips() {
 		setUserTrips(trips.sort((a, b) => b.id - a.id));
 	};
 
+	const handleTripDelete = (tripId) => {
+		// Remove the trip from the local state
+		setUserTrips((prevTrips) => prevTrips.filter((trip) => trip.id !== tripId));
+	};
+
 	return (
 		<div className="min-h-screen w-full bg-gradient-to-b from-blue-50 to-cyan-50 py-20 px-6">
 			{/* Animated Background Shapes */}
@@ -63,7 +68,7 @@ function MyTrips() {
 				{userTrips.length > 0 ? (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 						{userTrips.map((trip, index) => (
-							<UserTripCardItem key={index} trip={trip} />
+							<UserTripCardItem key={index} trip={trip} onDelete={handleTripDelete} />
 						))}
 					</div>
 				) : (

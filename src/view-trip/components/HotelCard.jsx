@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { GetPlaceDetails, PHOTO_REF_URL } from "../../service/GlobalApi";
+import { SpinnerImage } from "@/components/ui/spinner";
 
 function HotelCard({ day, index, daysCount }) {
 	const [photoUrl, setPhotoUrl] = useState(null);
+	const [imageLoading, setImageLoading] = useState(true);
 
 	useEffect(() => {
 		if (day?.accommodation?.location) {
@@ -16,6 +18,7 @@ function HotelCard({ day, index, daysCount }) {
 	};
 
 	const getPlaceImage = async () => {
+		setImageLoading(true);
 		try {
 			const res = await GetPlaceDetails(data);
 			if (res?.data?.places?.[0]?.photos?.length) {
@@ -25,6 +28,8 @@ function HotelCard({ day, index, daysCount }) {
 			}
 		} catch (err) {
 			console.error("Error fetching place image:", err);
+		} finally {
+			setImageLoading(false);
 		}
 	};
 
@@ -146,10 +151,13 @@ function HotelCard({ day, index, daysCount }) {
 			>
 				{/* Hotel Image with Overlay */}
 				<div className="relative overflow-hidden h-48">
+					{imageLoading && <SpinnerImage />}
 					<img
 						src={photoUrl || "/placeholder.jpg"}
 						alt={day?.accommodation?.name}
 						className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+						onLoad={() => setImageLoading(false)}
+						onError={() => setImageLoading(false)}
 					/>
 					<div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
 					

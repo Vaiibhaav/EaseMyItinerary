@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, Users, Wallet } from "lucide-react"; // ✅ Lucide icons
+import { Calendar, Users, Wallet } from "lucide-react"; // Lucide icons
 import { GetPlaceDetails, PHOTO_REF_URL } from "../../service/GlobalApi";
 
 function InfoSection({ trip }) {

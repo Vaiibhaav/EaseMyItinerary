@@ -4,7 +4,7 @@ function Special() {
 	const [user, setUser] = useState(null);
 	const [checked, setChecked] = useState(false);
 
-	// ✅ Read the allowed user from .env
+	// Read the allowed user from .env
 	const allowedEmail = import.meta.env.VITE_SPECIAL_USER;
 
 	useEffect(() => {
@@ -12,7 +12,7 @@ function Special() {
 		if (storedUser) {
 			const parsedUser = JSON.parse(storedUser);
 
-			// ✅ Compare against env email
+			// Compare against env email
 			if (parsedUser.email === allowedEmail) {
 				setUser(parsedUser);
 			}
