@@ -406,7 +406,7 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 								</h3>
 
 								<textarea
-									placeholder="Request changes to your itinerary..."
+									placeholder="Request changes to activities, timings, or locations. Note: Departure date and number of days cannot be changed."
 									rows="4"
 									value={updateText}
 									onChange={(e) => setUpdateText(e.target.value)}
