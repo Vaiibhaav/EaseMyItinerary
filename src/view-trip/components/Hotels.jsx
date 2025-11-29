@@ -3,7 +3,7 @@ import HotelCard from "./HotelCard";
 import HotelSelectionDialog from "./HotelSelectionDialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-function Hotels({ trip, onHotelUpdated }) {
+function Hotels({ trip, onHotelUpdated, isTripOwner = false }) {
 	const [showHotelDialog, setShowHotelDialog] = useState(false);
 	const scrollRef = useRef(null);
 	const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -96,8 +96,8 @@ function Hotels({ trip, onHotelUpdated }) {
 				<div className="flex-grow border-t-2 border-cyan-200"></div>
 			</div>
 
-			{/* Hotel Selection Option - Only show if booking is not done */}
-			{hasAvailableHotels && !trip?.isBookingDone && (
+			{/* Hotel Selection Option - Only show if booking is not done and user owns the trip */}
+			{hasAvailableHotels && !trip?.isBookingDone && isTripOwner && (
 				<div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
 					<p className="text-sm text-gray-700">
 						<span className="font-medium">Not happy with the current hotel?</span>{" "}

@@ -37,6 +37,28 @@ function ViewTrip() {
 	const location = useLocation();
 	// Check booking status from Firestore data or location state
 	const isPaid = trip?.isBookingDone || location.state?.paid || false;
+	
+	// Check if current user owns this trip
+	const [isTripOwner, setIsTripOwner] = useState(false);
+	
+	useEffect(() => {
+		if (trip?.userEmail) {
+			const rawUser = localStorage.getItem("user");
+			if (rawUser) {
+				try {
+					const user = JSON.parse(rawUser);
+					setIsTripOwner(user?.email === trip.userEmail);
+				} catch (err) {
+					console.error("Error parsing user from localStorage:", err);
+					setIsTripOwner(false);
+				}
+			} else {
+				setIsTripOwner(false);
+			}
+		} else {
+			setIsTripOwner(false);
+		}
+	}, [trip?.userEmail]);
 
 	// Helper function to verify location with Google Places
 	const verifyLocation = async (location) => {
@@ -359,7 +381,7 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 						
 
 						<Flights trip={trip} />
-						<Hotels trip={trip} onHotelUpdated={getTripData} />
+						<Hotels trip={trip} onHotelUpdated={getTripData} isTripOwner={isTripOwner} />
 						<Activities
 							trip={trip}
 							mapData={mapData}
@@ -376,8 +398,8 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 							destination={trip?.tripData?.destination}
 						/>
 
-						{/* Action Card */}
-						{!isPaid ? (
+						{/* Action Card - Only show if user owns the trip */}
+						{isTripOwner && !isPaid ? (
 							<div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border-2 border-cyan-200/50 p-5">
 								<h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent mb-4">
 									✨ Customize & Book
@@ -449,7 +471,7 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 									</Button>
 								</div>
 							</div>
-						) : (
+						) : isTripOwner && isPaid ? (
 							<div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border-2 border-green-200 p-5 text-center">
 								<div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3">
 									<span className="text-2xl">✅</span>
@@ -459,7 +481,7 @@ Ensure all changes align with user's request. Do not rewrite the entire text, on
 								</h3>
 								<p className="text-xs text-green-600">Receipt sent to email.</p>
 							</div>
-						)}
+						) : null}
 
 						{/* AI Assistant */}
 						<div className="bg-gradient-to-br from-blue-50 to-cyan-50 backdrop-blur-sm rounded-2xl shadow-xl border-2 border-blue-200/50 p-5">

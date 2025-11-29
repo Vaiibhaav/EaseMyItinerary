@@ -16,7 +16,9 @@ import {
 
 const MAP_LIBRARIES = ["places"];
 const API_BASE =
+	import.meta.env.VITE_API_URL ||
 	import.meta.env.VITE_API_BASE ||
+	import.meta.env.BACKEND_URL ||
 	(import.meta.env.DEV ? "http://localhost:3001" : "");
 const computeUrl = (path) => (API_BASE ? `${API_BASE}${path}` : path);
 
